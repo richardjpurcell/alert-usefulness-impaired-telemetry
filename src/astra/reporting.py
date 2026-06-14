@@ -59,6 +59,13 @@ def _round_series(series: pd.Series, digits: int) -> pd.Series:
 
     return pd.to_numeric(series, errors="raise").round(digits)
 
+def _format_markdown_value(value: object, digits: int) -> str:
+    """Format a table value for paper-facing Markdown output."""
+
+    if isinstance(value, float):
+        return f"{value:.{digits}f}"
+
+    return str(value)
 
 def make_paper_summary_table(
     sweep_summary_df: pd.DataFrame,
@@ -175,7 +182,11 @@ def make_markdown_summary_table(
 
     rows = []
     for _, row in paper_table.iterrows():
-        rows.append("| " + " | ".join(str(value) for value in row.values) + " |")
+        formatted_values = [
+            _format_markdown_value(value, digits)
+            for value in row.values
+        ]
+        rows.append("| " + " | ".join(formatted_values) + " |")
 
     return "\n".join([header, separator, *rows])
 

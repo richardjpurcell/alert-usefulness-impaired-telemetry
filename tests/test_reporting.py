@@ -147,3 +147,26 @@ def test_write_markdown_summary_table_writes_file(tmp_path):
 
     assert "| Experiment" in text
     assert "Baseline" in text
+
+def test_make_markdown_summary_table_uses_fixed_decimal_places():
+    sweep_summary_df = pd.DataFrame(
+        {
+            "experiment_slug": [
+                "exp01_synthetic_baseline",
+                "exp05_adversarial_suppression",
+                "exp06_alert_flood",
+            ],
+            "delivery_rate": [1.0, 0.5, 6.0],
+            "useful_event_fraction": [0.967, 0.935, 0.161],
+            "stale_event_fraction": [0.0, 0.0, 0.0],
+            "misleading_event_fraction": [0.033, 0.065, 0.006],
+            "belief_mean_belief_entropy": [0.189, 0.261, 0.464],
+            "belief_mean_belief_error": [0.062, 0.085, 0.164],
+        }
+    )
+
+    markdown = make_markdown_summary_table(sweep_summary_df)
+
+    assert "| Baseline | 1.000 | 0.967 | 0.000 | 0.033 | 0.189 | 0.062 |" in markdown
+    assert "| Suppression | 0.500 | 0.935 | 0.000 | 0.065 | 0.261 | 0.085 |" in markdown
+    assert "| Alert flood | 6.000 | 0.161 | 0.000 | 0.006 | 0.464 | 0.164 |" in markdown
