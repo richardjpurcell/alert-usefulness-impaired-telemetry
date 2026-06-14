@@ -1,0 +1,149 @@
+import pandas as pd
+import pytest
+
+from astra.reporting import (
+    DEFAULT_EXPERIMENT_LABELS,
+    PAPER_SUMMARY_COLUMNS,
+    make_markdown_summary_table,
+    make_paper_summary_table,
+    write_markdown_summary_table,
+    write_paper_summary_table,
+)
+
+
+def _sample_sweep_summary():
+    return pd.DataFrame(
+        [
+            {
+                "experiment_slug": "exp01_synthetic_baseline",
+                "delivery_rate": 1.0,
+                "useful_event_fraction": 0.96721,
+                "stale_event_fraction": 0.0,
+                "misleading_event_fraction": 0.03279,
+                "belief_mean_belief_entropy": 0.18888,
+                "belief_mean_belief_error": 0.06111,
+            },
+            {
+                "experiment_slug": "exp02_delay_impairment",
+                "delivery_rate": 1.0,
+                "useful_event_fraction": 0.54849,
+                "stale_event_fraction": 0.28142,
+                "misleading_event_fraction": 0.014,
+                "belief_mean_belief_entropy": 0.20333,
+                "belief_mean_belief_error": 0.06555,
+            },
+            {
+                "experiment_slug": "unknown_experiment",
+                "delivery_rate": 0.5,
+                "useful_event_fraction": 0.25,
+                "stale_event_fraction": 0.125,
+                "misleading_event_fraction": 0.0625,
+                "belief_mean_belief_entropy": 0.3333,
+                "belief_mean_belief_error": 0.2222,
+            },
+        ]
+    )
+
+
+def test_make_paper_summary_table_has_expected_columns():
+    table = make_paper_summary_table(_sample_sweep_summary())
+
+    assert list(table.columns) == PAPER_SUMMARY_COLUMNS
+
+
+def test_make_paper_summary_table_maps_known_experiment_labels():
+    table = make_paper_summary_table(_sample_sweep_summary())
+
+    assert table.loc[0, "Experiment"] == DEFAULT_EXPERIMENT_LABELS[
+        "exp01_synthetic_baseline"
+    ]
+    assert table.loc[1, "Experiment"] == DEFAULT_EXPERIMENT_LABELS[
+        "exp02_delay_impairment"
+    ]
+
+
+def test_make_paper_summary_table_keeps_unknown_experiment_slug():
+    table = make_paper_summary_table(_sample_sweep_summary())
+
+    assert table.loc[2, "Experiment"] == "unknown_experiment"
+
+
+def test_make_paper_summary_table_rounds_values():
+    table = make_paper_summary_table(_sample_sweep_summary(), digits=2)
+
+    assert table.loc[0, "Useful-event fraction"] == 0.97
+    assert table.loc[0, "Misleading-event fraction"] == 0.03
+    assert table.loc[1, "Stale-event fraction"] == 0.28
+
+
+def test_make_paper_summary_table_accepts_custom_label_map():
+    table = make_paper_summary_table(
+        _sample_sweep_summary(),
+        label_map={
+            "exp01_synthetic_baseline": "Healthy",
+            "exp02_delay_impairment": "Delayed",
+        },
+    )
+
+    assert table.loc[0, "Experiment"] == "Healthy"
+    assert table.loc[1, "Experiment"] == "Delayed"
+
+
+def test_make_paper_summary_table_rejects_missing_columns():
+    df = _sample_sweep_summary().drop(columns=["delivery_rate"])
+
+    with pytest.raises(ValueError, match="missing required columns"):
+        make_paper_summary_table(df)
+
+
+def test_make_paper_summary_table_rejects_negative_digits():
+    with pytest.raises(ValueError, match="digits cannot be negative"):
+        make_paper_summary_table(_sample_sweep_summary(), digits=-1)
+
+
+def test_write_paper_summary_table_writes_csv(tmp_path):
+    sweep_path = tmp_path / "impairment_sweep_summary.csv"
+    output_path = tmp_path / "paper_summary_table.csv"
+
+    _sample_sweep_summary().to_csv(sweep_path, index=False)
+
+    written = write_paper_summary_table(
+        sweep_summary_path=sweep_path,
+        output_path=output_path,
+    )
+
+    assert written == output_path
+    assert output_path.exists()
+
+    loaded = pd.read_csv(output_path)
+
+    assert list(loaded.columns) == PAPER_SUMMARY_COLUMNS
+    assert loaded.loc[0, "Experiment"] == "Baseline"
+
+
+def test_make_markdown_summary_table_returns_markdown():
+    markdown = make_markdown_summary_table(_sample_sweep_summary())
+
+    assert "| Experiment" in markdown
+    assert "Baseline" in markdown
+    assert "Delay" in markdown
+
+
+def test_write_markdown_summary_table_writes_file(tmp_path):
+    sweep_path = tmp_path / "impairment_sweep_summary.csv"
+    output_path = tmp_path / "paper_summary_table.md"
+
+    _sample_sweep_summary().to_csv(sweep_path, index=False)
+
+    written = write_markdown_summary_table(
+        sweep_summary_path=sweep_path,
+        output_path=output_path,
+    )
+
+    assert written == output_path
+    assert output_path.exists()
+
+    text = output_path.read_text(encoding="utf-8")
+
+    assert "| Experiment" in text
+    assert "Baseline" in text
