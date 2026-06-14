@@ -2,6 +2,17 @@ __pycache__/
 *.pyc
 .venv/
 .env
-outputs/
 *.egg-info/
 .DS_Store
+
+# Generated outputs
+outputs/figures/*
+outputs/tables/*
+outputs/manifests/*
+outputs/logs/*
+
+# Keep output directory structure
+!outputs/figures/.gitkeep
+!outputs/tables/.gitkeep
+!outputs/manifests/.gitkeep
+!outputs/logs/.gitkeep
