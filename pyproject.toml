@@ -1,0 +1,14 @@
+[project]
+name = "astra-security-telemetry-usefulness"
+version = "0.1.0"
+description = "Research tool for auditing alert usefulness under impaired security telemetry."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "pyyaml",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

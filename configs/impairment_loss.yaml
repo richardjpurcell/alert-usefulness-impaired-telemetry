@@ -1,0 +1,6 @@
+experiment_slug: exp03_loss_impairment
+inherits: synthetic_baseline.yaml
+
+impairment:
+  mode: loss
+  drop_probability: 0.3

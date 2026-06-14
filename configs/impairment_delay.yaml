@@ -1,0 +1,7 @@
+experiment_slug: exp02_delay_impairment
+inherits: synthetic_baseline.yaml
+
+impairment:
+  mode: delay
+  delay_steps: 5
+  affected_event_fraction: 0.3

@@ -1,0 +1,7 @@
+experiment_slug: exp06_alert_flood
+inherits: synthetic_baseline.yaml
+
+impairment:
+  mode: alert_flood
+  flood_event_type: low_value_network_alert
+  flood_multiplier: 5

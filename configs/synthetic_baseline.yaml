@@ -1,0 +1,25 @@
+experiment_slug: exp01_synthetic_baseline
+seed: 42
+
+network:
+  num_hosts: 50
+  num_initial_compromised: 5
+  time_steps: 100
+
+telemetry:
+  event_types:
+    - auth_alert
+    - endpoint_alert
+    - network_alert
+
+impairment:
+  mode: healthy
+
+triage:
+  policy: highest_score_first
+  analyst_budget_per_step: 5
+
+outputs:
+  write_manifest: true
+  write_tables: true
+  write_figures: true

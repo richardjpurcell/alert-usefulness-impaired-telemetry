@@ -1,0 +1,7 @@
+experiment_slug: exp04_noise_impairment
+inherits: synthetic_baseline.yaml
+
+impairment:
+  mode: noise
+  false_positive_rate: 0.2
+  false_negative_rate: 0.2

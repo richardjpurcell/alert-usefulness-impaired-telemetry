@@ -1,0 +1,7 @@
+experiment_slug: exp05_adversarial_suppression
+inherits: synthetic_baseline.yaml
+
+impairment:
+  mode: adversarial_suppression
+  suppress_compromised_host_events: true
+  suppression_probability: 0.5
