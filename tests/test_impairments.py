@@ -183,3 +183,25 @@ def test_summarize_impairment_for_alert_flood_case():
     assert summary["missing_generated_events"] == 0
     assert summary["delivery_rate"] == 3.0
     assert summary["represented_delivery_rate"] == 1.0
+
+def test_noise_adds_false_positives_and_can_drop_true_signals():
+    telemetry_df = _sample_telemetry()
+
+    delivered_df = apply_impairment(
+        telemetry_df,
+        ImpairmentConfig(
+            mode=ImpairmentMode.NOISE.value,
+            seed=1,
+            false_positive_rate=1.0,
+            false_negative_rate=1.0,
+        ),
+    )
+
+    true_signal_count = int(telemetry_df["is_true_signal"].sum())
+    expected_kept_originals = len(telemetry_df) - true_signal_count
+    expected_false_positives = len(telemetry_df)
+
+    assert len(delivered_df) == expected_kept_originals + expected_false_positives
+    assert (
+        delivered_df["impairment_status"] == "synthetic_false_positive"
+    ).sum() == expected_false_positives

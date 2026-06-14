@@ -34,6 +34,7 @@ class ImpairmentMode(StrEnum):
     HEALTHY = "healthy"
     DELAY = "delay"
     LOSS = "loss"
+    NOISE = "noise"
     DUPLICATION = "duplication"
     ALERT_FLOOD = "alert_flood"
     ADVERSARIAL_SUPPRESSION = "adversarial_suppression"
@@ -52,6 +53,11 @@ class ImpairmentConfig:
 
     # Loss
     drop_probability: float = 0.30
+
+    # Noise
+    false_positive_rate: float = 0.20
+    false_negative_rate: float = 0.20
+    noise_score_range: tuple[float, float] = (0.10, 0.45)
 
     # Duplication
     duplicate_probability: float = 0.30
@@ -137,12 +143,15 @@ def validate_impairment_config(config: ImpairmentConfig) -> None:
     for name, value in [
         ("affected_event_fraction", config.affected_event_fraction),
         ("drop_probability", config.drop_probability),
+        ("false_positive_rate", config.false_positive_rate),
+        ("false_negative_rate", config.false_negative_rate),
         ("duplicate_probability", config.duplicate_probability),
         ("suppression_probability", config.suppression_probability),
     ]:
         _validate_probability(name, value)
 
     _validate_score_range("flood_score_range", config.flood_score_range)
+    _validate_score_range("noise_score_range", config.noise_score_range)
 
 
 def _validate_telemetry_df(telemetry_df: pd.DataFrame) -> None:
@@ -216,6 +225,9 @@ def apply_impairment(
     if config.mode == ImpairmentMode.LOSS.value:
         return _apply_loss(telemetry_df, config)
 
+    if config.mode == ImpairmentMode.NOISE.value:
+        return _apply_noise(telemetry_df, config)
+
     if config.mode == ImpairmentMode.DUPLICATION.value:
         return _apply_duplication(telemetry_df, config)
 
@@ -226,7 +238,6 @@ def apply_impairment(
         return _apply_adversarial_suppression(telemetry_df, config)
 
     raise ValueError(f"Unhandled impairment mode: {config.mode}")
-
 
 def _apply_healthy(
     telemetry_df: pd.DataFrame,
@@ -495,3 +506,80 @@ def summarize_impairment(
         "delivery_rate": float(delivery_rate),
         "represented_delivery_rate": float(represented_delivery_rate),
     }
+
+def _apply_noise(
+    telemetry_df: pd.DataFrame,
+    config: ImpairmentConfig,
+) -> pd.DataFrame:
+    """Apply false negatives and false positives.
+
+    False negatives drop a fraction of true-signal events.
+    False positives add synthetic benign-looking events.
+
+    This is intentionally simple:
+    - true-signal events are eligible for false-negative removal;
+    - synthetic false positives are attached to existing hosts/times;
+    - false positives are delivered events but not true signals.
+    """
+
+    rng = np.random.default_rng(config.seed)
+
+    true_signal_mask = telemetry_df["is_true_signal"].astype(bool).to_numpy()
+    false_negative_draws = rng.random(len(telemetry_df))
+    false_negative_mask = true_signal_mask & (
+        false_negative_draws < config.false_negative_rate
+    )
+
+    kept_df = telemetry_df.loc[~false_negative_mask].copy()
+
+    delivered = _base_delivered_frame(
+        kept_df,
+        mode=config.mode,
+        status="kept_after_noise",
+    )
+
+    num_false_positives = int(round(len(telemetry_df) * config.false_positive_rate))
+
+    if num_false_positives == 0 or telemetry_df.empty:
+        return delivered.sort_values(
+            ["delivery_time", "host_id", "event_id"]
+        ).reset_index(drop=True)
+
+    times = telemetry_df["time"].astype(int).to_numpy()
+    host_ids = telemetry_df["host_id"].astype(str).unique()
+    event_types = [event_type.value for event_type in TelemetryEventType]
+
+    low, high = config.noise_score_range
+    noise_events: list[dict[str, Any]] = []
+
+    for i in range(num_false_positives):
+        generated_time = int(rng.choice(times))
+        host_id = str(rng.choice(host_ids))
+        event_type = str(rng.choice(event_types))
+
+        noise_events.append(
+            {
+                "event_id": f"noise_event_{i:06d}",
+                "time": generated_time,
+                "host_id": host_id,
+                "event_type": event_type,
+                "event_score": float(rng.uniform(low, high)),
+                "source_state": HostState.BENIGN.value,
+                "is_true_signal": False,
+                "generated_time": generated_time,
+                "delivery_time": generated_time,
+                "impairment_mode": config.mode,
+                "impairment_status": "synthetic_false_positive",
+                "is_delivered": True,
+                "is_synthetic_flood": False,
+                "parent_event_id": pd.NA,
+            }
+        )
+
+    noise_df = pd.DataFrame.from_records(noise_events, columns=DELIVERED_COLUMNS)
+
+    combined = pd.concat([delivered, noise_df], ignore_index=True)
+
+    return combined[DELIVERED_COLUMNS].sort_values(
+        ["delivery_time", "host_id", "event_id"]
+    ).reset_index(drop=True)
