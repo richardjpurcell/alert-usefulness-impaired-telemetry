@@ -16,3 +16,5 @@ outputs/logs/*
 !outputs/tables/.gitkeep
 !outputs/manifests/.gitkeep
 !outputs/logs/.gitkeep
+# Local raw datasets
+/data/raw/
