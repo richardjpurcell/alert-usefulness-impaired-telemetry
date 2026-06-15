@@ -23,6 +23,15 @@ import pandas as pd
 DEFAULT_FIGSIZE = (8, 4.8)
 DEFAULT_DPI = 160
 
+DEFAULT_EXPERIMENT_LABELS = {
+    "exp01_synthetic_baseline": "Baseline",
+    "exp02_delay_impairment": "Delay",
+    "exp03_loss_impairment": "Loss",
+    "exp04_noise_impairment": "Noise",
+    "exp05_adversarial_suppression": "Suppression",
+    "exp06_alert_flood": "Alert flood",
+}
+
 
 def _ensure_parent(path: str | Path) -> Path:
     """Ensure the parent directory for a path exists."""
@@ -40,24 +49,28 @@ def _require_columns(df: pd.DataFrame, required: set[str], name: str) -> None:
     if missing:
         raise ValueError(f"{name} is missing required columns: {sorted(missing)}")
 
+def _experiment_labels(
+    experiment_slugs: pd.Series,
+    label_map: dict[str, str] | None = None,
+) -> pd.Series:
+    """Map experiment slugs to readable labels."""
+
+    labels = label_map or DEFAULT_EXPERIMENT_LABELS
+
+    return experiment_slugs.astype(str).map(lambda slug: labels.get(slug, slug))
+
 
 def plot_delivery_vs_usefulness(
     sweep_summary_df: pd.DataFrame,
     output_path: str | Path,
+    label_map: dict[str, str] | None = None,
+    title: str = "Telemetry delivery versus usefulness",
 ) -> Path:
     """Plot delivery rate and useful-event fraction by experiment.
 
-    Parameters
-    ----------
-    sweep_summary_df:
-        DataFrame produced by the impairment sweep summary.
-    output_path:
-        Destination PNG path.
-
-    Returns
-    -------
-    pathlib.Path
-        Written figure path.
+    This figure highlights the core ASTRA claim: telemetry volume or delivery
+    rate can separate from the fraction of delivered events that are useful for
+    defender belief maintenance.
     """
 
     _require_columns(
@@ -69,13 +82,16 @@ def plot_delivery_vs_usefulness(
     output_path = _ensure_parent(output_path)
 
     plot_df = sweep_summary_df.copy()
-    plot_df["experiment_slug"] = plot_df["experiment_slug"].astype(str)
+    plot_df["Experiment"] = _experiment_labels(
+        plot_df["experiment_slug"],
+        label_map=label_map,
+    )
 
     x = range(len(plot_df))
+    width = 0.38
 
     fig, ax = plt.subplots(figsize=DEFAULT_FIGSIZE)
 
-    width = 0.38
     ax.bar(
         [i - width / 2 for i in x],
         plot_df["delivery_rate"],
@@ -89,11 +105,18 @@ def plot_delivery_vs_usefulness(
         label="Useful-event fraction",
     )
 
-    ax.set_title("Telemetry delivery versus usefulness")
+    ax.axhline(
+        y=1.0,
+        linestyle="--",
+        linewidth=1,
+        alpha=0.6,
+    )
+
+    ax.set_title(title)
     ax.set_ylabel("Rate / fraction")
     ax.set_xlabel("Experiment")
     ax.set_xticks(list(x))
-    ax.set_xticklabels(plot_df["experiment_slug"], rotation=35, ha="right")
+    ax.set_xticklabels(plot_df["Experiment"], rotation=30, ha="right")
     ax.legend()
     ax.grid(axis="y", alpha=0.3)
 
@@ -177,7 +200,7 @@ def plot_belief_quality(
     output_path = _ensure_parent(output_path)
 
     plot_df = sweep_summary_df.copy()
-    plot_df["experiment_slug"] = plot_df["experiment_slug"].astype(str)
+    plot_df["Experiment"] = _experiment_labels(plot_df["experiment_slug"])
 
     x = range(len(plot_df))
     width = 0.38
@@ -201,7 +224,7 @@ def plot_belief_quality(
     ax.set_ylabel("Mean value")
     ax.set_xlabel("Experiment")
     ax.set_xticks(list(x))
-    ax.set_xticklabels(plot_df["experiment_slug"], rotation=35, ha="right")
+    ax.set_xticklabels(plot_df["Experiment"], rotation=30, ha="right")
     ax.legend()
     ax.grid(axis="y", alpha=0.3)
 
