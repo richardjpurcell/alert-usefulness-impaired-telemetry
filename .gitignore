@@ -18,3 +18,7 @@ outputs/logs/*
 !outputs/logs/.gitkeep
 # Local raw datasets
 /data/raw/
+
+# Local processed dataset outputs
+/data/processed/
+EOF
