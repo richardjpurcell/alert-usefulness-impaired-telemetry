@@ -25,6 +25,17 @@ NORMALIZED_TELEMETRY_COLUMNS = [
     "scenario",
 ]
 
+MORDOR_DEFAULT_COLUMN_MAP = {
+    "event_time": "timestamp",
+    "host_id": "host",
+    "event_type": "event_type",
+    "severity": "severity",
+    "observed_state": "observed_state",
+}
+
+
+MORDOR_SOURCE_DATASET = "mordor"
+
 
 def require_normalized_telemetry_columns(
     telemetry_df: pd.DataFrame,
@@ -124,5 +135,39 @@ def load_generic_event_csv(
         event_df,
         column_map=column_map,
         source_dataset=source_dataset,
+        scenario=scenario,
+    )
+
+def normalize_mordor_event_table(
+    event_df: pd.DataFrame,
+    scenario: str,
+    column_map: dict[str, str] | None = None,
+) -> pd.DataFrame:
+    """Normalize a Mordor/OTRF-style event table into ASTRA's telemetry schema.
+
+    This first-pass adapter expects a simplified, extracted Mordor-like table.
+    Full JSON parsing and ATT&CK metadata handling are intentionally left to a
+    later branch.
+    """
+
+    return normalize_generic_event_table(
+        event_df,
+        column_map=column_map or MORDOR_DEFAULT_COLUMN_MAP,
+        source_dataset=MORDOR_SOURCE_DATASET,
+        scenario=scenario,
+    )
+
+
+def load_mordor_event_csv(
+    csv_path: str | Path,
+    scenario: str,
+    column_map: dict[str, str] | None = None,
+) -> pd.DataFrame:
+    """Load and normalize a Mordor/OTRF-style event CSV."""
+
+    return load_generic_event_csv(
+        csv_path,
+        column_map=column_map or MORDOR_DEFAULT_COLUMN_MAP,
+        source_dataset=MORDOR_SOURCE_DATASET,
         scenario=scenario,
     )
