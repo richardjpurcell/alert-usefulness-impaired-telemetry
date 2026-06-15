@@ -117,6 +117,86 @@ def mordor_to_generated_telemetry(mordor_df: pd.DataFrame) -> pd.DataFrame:
     ]
 
 
+def aggregate_generated_telemetry(
+    generated_df: pd.DataFrame,
+    window_steps: int,
+) -> pd.DataFrame:
+    """Aggregate generated telemetry into host/window/event/state units."""
+
+    if window_steps <= 0:
+        raise ValueError("window_steps must be positive.")
+
+    required = {
+        "event_id",
+        "time",
+        "host_id",
+        "event_type",
+        "event_score",
+        "source_state",
+        "is_true_signal",
+    }
+    missing = required - set(generated_df.columns)
+
+    if missing:
+        raise ValueError(f"generated_df is missing required columns: {sorted(missing)}")
+
+    df = generated_df.copy()
+    df["time"] = df["time"].astype(int)
+    df["aggregation_window_start"] = (df["time"] // window_steps) * window_steps
+    df["aggregation_window_end"] = df["aggregation_window_start"] + window_steps - 1
+
+    grouped = (
+        df.groupby(
+            [
+                "host_id",
+                "aggregation_window_start",
+                "aggregation_window_end",
+                "event_type",
+                "source_state",
+            ],
+            sort=True,
+        )
+        .agg(
+            event_score=("event_score", "max"),
+            is_true_signal=("is_true_signal", "any"),
+            source_event_count=("event_id", "count"),
+            max_event_score=("event_score", "max"),
+            mean_event_score=("event_score", "mean"),
+        )
+        .reset_index()
+    )
+
+    grouped["time"] = grouped["aggregation_window_start"].astype(int)
+    grouped["event_id"] = [
+        (
+            f"agg-w{window_steps}-"
+            f"{int(row.aggregation_window_start):06d}-"
+            f"{row.host_id}-"
+            f"{row.event_type}-"
+            f"{row.source_state}-"
+            f"{idx:06d}"
+        )
+        for idx, row in grouped.reset_index(drop=True).iterrows()
+    ]
+
+    return grouped[
+        [
+            "event_id",
+            "time",
+            "host_id",
+            "event_type",
+            "event_score",
+            "source_state",
+            "is_true_signal",
+            "source_event_count",
+            "max_event_score",
+            "mean_event_score",
+            "aggregation_window_start",
+            "aggregation_window_end",
+        ]
+    ].reset_index(drop=True)
+
+
 def build_state_from_generated(
     generated_df: pd.DataFrame,
     max_time: int | None = None,

@@ -102,3 +102,110 @@ def test_run_mordor_belief_usefulness_experiment_returns_summary_tables(tmp_path
     assert {"scenario", "impairment_mode", "usefulness_label", "count"}.issubset(
         label_counts_df.columns
     )
+
+def test_aggregate_generated_telemetry_preserves_required_columns():
+    from scripts.run_mordor_belief_usefulness_experiment import (
+        aggregate_generated_telemetry,
+    )
+
+    generated_df = mordor_to_generated_telemetry(_sample_mordor_df())
+    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+
+    assert {
+        "event_id",
+        "time",
+        "host_id",
+        "event_type",
+        "event_score",
+        "source_state",
+        "is_true_signal",
+    }.issubset(aggregated_df.columns)
+
+    assert {
+        "source_event_count",
+        "max_event_score",
+        "mean_event_score",
+        "aggregation_window_start",
+        "aggregation_window_end",
+    }.issubset(aggregated_df.columns)
+
+
+def test_aggregate_generated_telemetry_reduces_repeated_records():
+    from scripts.run_mordor_belief_usefulness_experiment import (
+        aggregate_generated_telemetry,
+    )
+
+    generated_df = mordor_to_generated_telemetry(
+        pd.DataFrame(
+            {
+                "timestamp": [
+                    "2020-01-01T00:00:00Z",
+                    "2020-01-01T00:01:00Z",
+                    "2020-01-01T00:02:00Z",
+                ],
+                "host": ["host-a", "host-a", "host-a"],
+                "event_type": ["endpoint_alert", "endpoint_alert", "endpoint_alert"],
+                "severity": ["low", "medium", "high"],
+                "observed_state": ["compromised", "compromised", "compromised"],
+            }
+        )
+    )
+
+    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+
+    assert len(aggregated_df) == 1
+    assert aggregated_df.loc[0, "source_event_count"] == 3
+
+
+def test_aggregate_generated_telemetry_uses_max_event_score():
+    from scripts.run_mordor_belief_usefulness_experiment import (
+        aggregate_generated_telemetry,
+    )
+
+    generated_df = mordor_to_generated_telemetry(
+        pd.DataFrame(
+            {
+                "timestamp": [
+                    "2020-01-01T00:00:00Z",
+                    "2020-01-01T00:01:00Z",
+                ],
+                "host": ["host-a", "host-a"],
+                "event_type": ["endpoint_alert", "endpoint_alert"],
+                "severity": ["low", "high"],
+                "observed_state": ["compromised", "compromised"],
+            }
+        )
+    )
+
+    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+
+    assert aggregated_df.loc[0, "event_score"] == 0.9
+    assert aggregated_df.loc[0, "max_event_score"] == 0.9
+
+
+def test_aggregate_generated_telemetry_is_deterministic():
+    from scripts.run_mordor_belief_usefulness_experiment import (
+        aggregate_generated_telemetry,
+    )
+
+    generated_df = mordor_to_generated_telemetry(_sample_mordor_df())
+
+    first_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+    second_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+
+    pd.testing.assert_frame_equal(first_df, second_df)
+
+
+def test_aggregate_generated_telemetry_rejects_nonpositive_window():
+    from scripts.run_mordor_belief_usefulness_experiment import (
+        aggregate_generated_telemetry,
+    )
+
+    generated_df = mordor_to_generated_telemetry(_sample_mordor_df())
+
+    try:
+        aggregate_generated_telemetry(generated_df, window_steps=0)
+    except ValueError as exc:
+        assert "window_steps must be positive" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError")
