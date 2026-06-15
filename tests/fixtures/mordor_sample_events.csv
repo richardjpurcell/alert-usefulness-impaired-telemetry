@@ -1,0 +1,5 @@
+timestamp,host,event_type,severity,observed_state
+2020-05-02T02:56:00Z,WORKSTATION-001,process_creation,high,suspicious
+2020-05-02T02:57:00Z,DOMAIN-CONTROLLER,authentication,medium,compromised
+2020-05-02T02:58:00Z,WORKSTATION-001,network_connection,medium,suspicious
+2020-05-02T03:00:00Z,DOMAIN-CONTROLLER,service_creation,high,compromised

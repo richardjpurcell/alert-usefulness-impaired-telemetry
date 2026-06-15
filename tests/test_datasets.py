@@ -261,3 +261,21 @@ def test_load_mordor_event_csv_loads_and_normalizes_csv(tmp_path):
     assert len(normalized) == 2
     assert set(normalized["source_dataset"]) == {MORDOR_SOURCE_DATASET}
     assert normalized.loc[1, "host_id"] == "DOMAIN-CONTROLLER"
+
+
+def test_load_mordor_event_csv_loads_committed_fixture():
+    normalized = load_mordor_event_csv(
+        "tests/fixtures/mordor_sample_events.csv",
+        scenario="mordor-sample-fixture",
+    )
+
+    assert list(normalized.columns) == NORMALIZED_TELEMETRY_COLUMNS
+    assert len(normalized) == 4
+    assert list(normalized["event_id"]) == [0, 1, 2, 3]
+    assert set(normalized["source_dataset"]) == {MORDOR_SOURCE_DATASET}
+    assert set(normalized["scenario"]) == {"mordor-sample-fixture"}
+
+    assert normalized.loc[0, "host_id"] == "WORKSTATION-001"
+    assert normalized.loc[1, "host_id"] == "DOMAIN-CONTROLLER"
+    assert normalized.loc[3, "event_type"] == "service_creation"
+    assert normalized.loc[3, "observed_state"] == "compromised"
