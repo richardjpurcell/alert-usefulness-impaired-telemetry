@@ -4,8 +4,11 @@ from pathlib import Path
 import pandas as pd
 
 from scripts.run_mordor_belief_usefulness_experiment import (
+    aggregate_generated_telemetry,
     build_state_from_generated,
+    mordor_state_is_true_signal,
     mordor_to_generated_telemetry,
+    normalize_mordor_observed_state,
     run_mordor_belief_usefulness_experiment,
 )
 
@@ -209,3 +212,56 @@ def test_aggregate_generated_telemetry_rejects_nonpositive_window():
         assert "window_steps must be positive" in str(exc)
     else:
         raise AssertionError("Expected ValueError")
+
+def test_normalize_mordor_observed_state_known_values():
+
+    assert normalize_mordor_observed_state("benign") == "benign"
+    assert normalize_mordor_observed_state("suspicious") == "suspicious"
+    assert normalize_mordor_observed_state("compromised") == "compromised"
+
+
+def test_normalize_mordor_observed_state_handles_case_and_whitespace():
+
+    assert normalize_mordor_observed_state(" Benign ") == "benign"
+    assert normalize_mordor_observed_state(" SUSPICIOUS ") == "suspicious"
+    assert normalize_mordor_observed_state(" Compromised ") == "compromised"
+
+
+def test_normalize_mordor_observed_state_unknown_is_suspicious():
+
+    assert normalize_mordor_observed_state("unknown") == "suspicious"
+    assert normalize_mordor_observed_state("") == "suspicious"
+    assert normalize_mordor_observed_state(None) == "suspicious"
+
+
+def test_mordor_state_is_true_signal():
+
+    assert mordor_state_is_true_signal("benign") is False
+    assert mordor_state_is_true_signal("suspicious") is True
+    assert mordor_state_is_true_signal("compromised") is True
+    assert mordor_state_is_true_signal("unknown") is True
+
+
+def test_mordor_to_generated_telemetry_uses_state_normalization():
+    generated_df = mordor_to_generated_telemetry(
+        pd.DataFrame(
+            {
+                "timestamp": [
+                    "2020-01-01T00:00:00Z",
+                    "2020-01-01T00:01:00Z",
+                    "2020-01-01T00:02:00Z",
+                ],
+                "host": ["host-a", "host-a", "host-a"],
+                "event_type": ["auth_alert", "auth_alert", "auth_alert"],
+                "severity": ["low", "low", "low"],
+                "observed_state": [" Benign ", "UNKNOWN", None],
+            }
+        )
+    )
+
+    assert generated_df["source_state"].tolist() == [
+        "benign",
+        "suspicious",
+        "suspicious",
+    ]
+    assert generated_df["is_true_signal"].tolist() == [False, True, True]
