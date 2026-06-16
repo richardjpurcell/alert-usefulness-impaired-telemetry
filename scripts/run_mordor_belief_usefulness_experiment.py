@@ -66,6 +66,37 @@ SEVERITY_TO_SCORE = {
     "high": 0.90,
 }
 
+KNOWN_MORDOR_STATES = {
+    "benign",
+    "suspicious",
+    "compromised",
+}
+
+
+def normalize_mordor_observed_state(value: object) -> str:
+    """Normalize a Mordor observed_state value for ASTRA experiments.
+
+    This is an experimental evaluation abstraction, not SOC-grade truth.
+    Unknown or missing states are mapped conservatively to ``suspicious``.
+    """
+
+    if pd.isna(value):
+        return "suspicious"
+
+    normalized = str(value).strip().lower()
+
+    if normalized in KNOWN_MORDOR_STATES:
+        return normalized
+
+    return "suspicious"
+
+
+def mordor_state_is_true_signal(value: object) -> bool:
+    """Return whether a Mordor observed_state should count as true signal."""
+
+    return normalize_mordor_observed_state(value) != "benign"
+
+
 
 def load_mordor_processed_csv(path: Path = INPUT_PATH) -> pd.DataFrame:
     """Load the processed Mordor telemetry CSV."""
@@ -101,8 +132,8 @@ def mordor_to_generated_telemetry(mordor_df: pd.DataFrame) -> pd.DataFrame:
         .fillna(0.20)
         .astype(float)
     )
-    df["source_state"] = df["observed_state"].astype(str)
-    df["is_true_signal"] = df["source_state"] != "benign"
+    df["source_state"] = df["observed_state"].map(normalize_mordor_observed_state)
+    df["is_true_signal"] = df["observed_state"].map(mordor_state_is_true_signal)
 
     return df[
         [
