@@ -1,0 +1,108 @@
+{
+  "experiment_slug": "exp04_noise_impairment",
+  "created_at_utc": "2026-06-14T17:03:31.646486+00:00",
+  "status": "completed",
+  "pipeline": [
+    "incident_state",
+    "generated_telemetry",
+    "impaired_telemetry",
+    "defender_belief",
+    "usefulness_diagnostics"
+  ],
+  "config": {
+    "experiment_slug": "exp04_noise_impairment",
+    "seed": 42,
+    "network": {
+      "num_hosts": 50,
+      "num_initial_compromised": 5,
+      "time_steps": 100
+    },
+    "telemetry": {
+      "event_types": [
+        "auth_alert",
+        "endpoint_alert",
+        "network_alert"
+      ]
+    },
+    "impairment": {
+      "mode": "noise",
+      "false_positive_rate": 0.2,
+      "false_negative_rate": 0.2
+    },
+    "triage": {
+      "policy": "highest_score_first",
+      "analyst_budget_per_step": 5
+    },
+    "outputs": {
+      "write_manifest": true,
+      "write_tables": true,
+      "write_figures": true
+    }
+  },
+  "summaries": {
+    "signal": {
+      "total_events": 2331,
+      "true_signal_events": 2304,
+      "background_events": 27
+    },
+    "impairment": {
+      "generated_events": 2331,
+      "delivered_events": 2319,
+      "synthetic_flood_events": 0,
+      "duplicate_events": 0,
+      "delayed_events": 0,
+      "missing_generated_events": 478,
+      "delivery_rate": 0.9948519948519948,
+      "represented_delivery_rate": 0.7949377949377949
+    },
+    "belief": {
+      "mean_belief_entropy": 0.2189542650153185,
+      "mean_belief_error": 0.11868412991072046,
+      "terminal_belief_entropy": 0.06158228289684477,
+      "terminal_belief_error": 0.0488274673529605
+    },
+    "event_updates": {
+      "updated_events": 2319,
+      "mean_belief_delta": 0.03542841214963788,
+      "mean_entropy_delta": -0.10012507597026585,
+      "entropy_reducing_events": 2013,
+      "entropy_increasing_events": 96
+    },
+    "usefulness": {
+      "generated_events": 2331,
+      "delivered_events": 2319,
+      "synthetic_flood_events": 0,
+      "duplicate_events": 0,
+      "delayed_events": 0,
+      "missing_generated_events": 478,
+      "delivery_rate": 0.9948519948519948,
+      "represented_delivery_rate": 0.7949377949377949,
+      "updated_events": 2319,
+      "useful_events": 1955,
+      "stale_events": 0,
+      "redundant_events": 210,
+      "misleading_events": 154,
+      "uninformative_events": 0,
+      "flood_events": 0,
+      "useful_event_fraction": 0.8430357912893489,
+      "stale_event_fraction": 0.0,
+      "redundant_event_fraction": 0.09055627425614489,
+      "misleading_event_fraction": 0.06640793445450625,
+      "mean_latency": 0.0,
+      "mean_belief_delta": 0.03542841214963788,
+      "mean_entropy_delta": -0.10012507597026585,
+      "mean_belief_error_delta": -0.012143444452158064
+    }
+  },
+  "outputs": {
+    "incident_state": "outputs/tables/exp04_noise_impairment_incident_state.csv",
+    "incident_summary": "outputs/tables/exp04_noise_impairment_incident_summary.csv",
+    "generated_telemetry": "outputs/tables/exp04_noise_impairment_generated_telemetry.csv",
+    "telemetry_summary": "outputs/tables/exp04_noise_impairment_telemetry_summary.csv",
+    "delivered_telemetry": "outputs/tables/exp04_noise_impairment_delivered_telemetry.csv",
+    "belief": "outputs/tables/exp04_noise_impairment_belief.csv",
+    "event_updates": "outputs/tables/exp04_noise_impairment_event_updates.csv",
+    "diagnostics": "outputs/tables/exp04_noise_impairment_diagnostics.csv",
+    "usefulness_label_counts": "outputs/tables/exp04_noise_impairment_usefulness_label_counts.csv"
+  }
+}

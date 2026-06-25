@@ -1,24 +1,33 @@
+# Python caches / build artifacts
 __pycache__/
-*.pyc
-.venv/
-.env
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
 *.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS/editor files
 .DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
 
-# Generated outputs
-outputs/figures/*
-outputs/tables/*
-outputs/manifests/*
-outputs/logs/*
+# Raw external datasets
+data/raw/*
+!data/raw/README.md
 
-# Keep output directory structure
-!outputs/figures/.gitkeep
-!outputs/tables/.gitkeep
-!outputs/manifests/.gitkeep
-!outputs/logs/.gitkeep
-# Local raw datasets
-/data/raw/
-
-# Local processed dataset outputs
-/data/processed/
-EOF
+# Local logs or scratch outputs
+outputs/logs/

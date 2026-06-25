@@ -1,0 +1,8 @@
+scenario,impairment_mode,generated_events,delivered_events,synthetic_flood_events,duplicate_events,delayed_events,missing_generated_events,delivery_rate,represented_delivery_rate
+empire_mimikatz_logonpasswords,healthy,6026,6026,0,0,0,0,1.0,1.0
+empire_mimikatz_logonpasswords,delay,6026,6026,0,0,1862,0,1.0,1.0
+empire_mimikatz_logonpasswords,loss,6026,4164,0,0,0,1862,0.6910056422170594,0.6910056422170594
+empire_mimikatz_logonpasswords,noise,6026,6052,0,0,0,1179,1.0043146365748423,0.8043478260869565
+empire_mimikatz_logonpasswords,duplication,6026,7888,0,1862,0,0,1.3089943577829406,1.0
+empire_mimikatz_logonpasswords,alert_flood,6026,12052,6026,0,0,0,2.0,1.0
+empire_mimikatz_logonpasswords,adversarial_suppression,6026,5904,0,0,0,122,0.9797543976103551,0.9797543976103551

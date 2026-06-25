@@ -1,0 +1,4 @@
+scenario,usefulness_label,events,mean_event_score,mean_belief_delta,mean_entropy_delta,mean_belief_error_delta,min_belief_error_delta,max_belief_error_delta,mean_belief_before,mean_belief_after
+empire_mimikatz_logonpasswords,misleading,33,0.3545454545454545,0.08627272727272728,-0.024999018125317737,0.08627272727272728,0.04899999999999971,0.22499999999999998,0.5212121212121213,0.6074848484848485
+empire_mimikatz_logonpasswords,redundant,5986,0.5906949548947544,0.0,0.0,0.0,0.0,0.0,0.999,0.999
+empire_mimikatz_logonpasswords,useful,7,0.3714285714285714,0.009489999999999998,-0.0726165445271347,0.006778571428571427,-0.009489999999999998,0.009489999999999998,0.98951,0.999
