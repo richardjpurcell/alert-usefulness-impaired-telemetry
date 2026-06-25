@@ -273,4 +273,4 @@ Until the associated paper has a final publication record, please cite this repo
 
 ## License
 
-License to be determined.
+This repository is released under the MIT License. External datasets are subject to their own licenses, terms of use, and citation requirements.
