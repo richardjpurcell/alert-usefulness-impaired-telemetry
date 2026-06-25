@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite the associated paper and this software artifact."
+title: "Alert Usefulness Under Impaired Security Telemetry: Experiment Repository"
+type: software
+authors:
+  - family-names: Purcell
+    given-names: Richard
+repository-code: "https://github.com/richardjpurcell/alert-usefulness-impaired-telemetry"
+abstract: "Experiment repository for the paper Alert Usefulness Under Impaired Security Telemetry. The repository contains code, configurations, processed inputs, derived outputs, tables, and figures for an alert-usefulness audit of impaired security telemetry using synthetic experiments and a Mordor / OTRF Security Datasets Empire Mimikatz LogonPasswords bridge."
+keywords:
+  - security telemetry
+  - alert usefulness
+  - SOC analytics
+  - SIEM
+  - telemetry impairment
+  - adversary emulation
+  - belief maintenance
+license: "MIT"
+version: "0.1.0"
+date-released: "2026-06-25"
