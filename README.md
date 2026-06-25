@@ -1,88 +1,136 @@
-# ASTRA: Alert Usefulness Under Impaired Security Telemetry
+# Alert Usefulness Under Impaired Security Telemetry
 
-ASTRA is a small research artifact for studying the difference between **security telemetry that arrives** and **security telemetry that is useful** for maintaining a defender’s belief about compromise.
+This repository contains the experiment code, configurations, processed inputs, derived outputs, figures, and notes for the paper:
+
+**Alert Usefulness Under Impaired Security Telemetry**
 
 The core idea is simple:
 
 > Security telemetry that arrives is not always useful.
 
-Modern security operations environments can be alert-rich while still leaving defenders uncertain, misled, overloaded, or poorly coupled to the underlying incident state. ASTRA provides a controlled experimental pipeline for testing this separation under delay, loss, noise, adversarial suppression, and alert flood conditions.
+The project studies how security telemetry can be delivered, counted, aggregated, or impaired while still failing to improve a maintained defender-role estimate of the security state. It is intended as a research artifact for alert-usefulness auditing, not as an intrusion detector, SIEM replacement, SOC product, or analyst-performance study.
 
 ## Research purpose
 
-ASTRA is not an intrusion detection system, SIEM replacement, or operational SOC tool. It is a bounded research instrument for asking:
+The repository supports an alert-usefulness audit framework for distinguishing:
 
-* How does telemetry impairment affect defender belief?
-* When does delivery rate fail to reflect usefulness?
-* Which impairments preserve event arrival while degrading belief quality?
-* When do alerts become stale, redundant, misleading, or uninformative?
-* How can alert usefulness be audited separately from alert volume?
+* telemetry delivery;
+* represented delivery;
+* alert/event volume;
+* aggregation;
+* impairment effects; and
+* belief-side usefulness.
 
-The artifact supports a paper direction tentatively framed as:
+Usefulness is interpreted in a narrow audit-relative sense: contribution to a specified belief-maintenance process under an explicit belief model, state abstraction, aggregation rule, and impairment model.
 
-**Alert Usefulness Under Impaired Security Telemetry**
+The audit labels delivered events or evidence units using diagnostic states such as useful, redundant, stale, misleading, and flood-relative. These labels are not universal operational SOC labels. They describe how evidence behaves under the declared audit design.
+
+## Paper framing
+
+The associated paper asks whether delivered security telemetry improves a maintained defender-role estimate of host compromise, attack progression, or response priority under controlled impairment.
+
+The paper’s real-data bridge uses the Mordor / OTRF Security Datasets, specifically the *Empire Mimikatz LogonPasswords* adversary-emulation scenario. In the paper, “bridge” means a controlled mapping from processed security events into the evidence units, belief updates, impairments, aggregation settings, and diagnostic labels required by the audit model.
+
+The Mordor bridge is not operational SOC validation. It is a bounded experiment showing that the delivery/usefulness distinction can be exercised on realistic adversary-emulation telemetry.
+
+## Repository structure
+
+```text
+configs/       Experiment configuration files
+data/          Processed inputs and raw-data notes
+docs/          Design notes, dataset notes, and result interpretation notes
+experiments/   Experiment entry points
+outputs/       Derived figures, manifests, and tables
+scripts/       Mordor extraction, validation, experiment, and figure scripts
+src/astra/     Core audit implementation
+tests/         Unit and integration tests
+```
 
 ## Pipeline
 
-ASTRA currently implements a first-pass synthetic experiment pipeline:
+The audit pipeline maps security telemetry into a belief-maintenance and diagnostic workflow:
 
 ```text
-latent incident state
-    → generated telemetry
-    → impaired telemetry
-    → defender belief
+source security events
+    → audit telemetry stream
+    → impairment and aggregation
+    → belief update for the defender role
     → usefulness diagnostics
-    → figures and summaries
+    → tables and figures
 ```
 
-Each surface is implemented as a separate module:
+The main implementation modules are:
 
 ```text
-src/astra/incident_state.py   # latent host compromise state
-src/astra/telemetry.py        # generated security telemetry
-src/astra/impairments.py      # delay, loss, noise, flood, suppression
-src/astra/belief.py           # defender belief update surface
+src/astra/incident_state.py   # incident-state abstractions
+src/astra/telemetry.py        # telemetry records and generated telemetry
+src/astra/impairments.py      # delay, loss, noise, flood, duplication, suppression
+src/astra/belief.py           # defender-role belief update surface
 src/astra/metrics.py          # usefulness diagnostics
-src/astra/visualization.py    # first-pass paper-facing figures
+src/astra/reporting.py        # summary tables and reporting helpers
+src/astra/visualization.py    # figure generation
+src/astra/datasets.py         # dataset-related helpers
 src/astra/experiments.py      # experiment orchestration
 ```
 
-## Current impairment modes
+## Impairment and aggregation modes
 
-ASTRA currently supports:
+The experiments include controlled conditions such as:
 
-| Mode                      | Interpretation                                           |
-| ------------------------- | -------------------------------------------------------- |
-| `healthy`                 | telemetry arrives without impairment                     |
-| `delay`                   | events arrive late                                       |
-| `loss`                    | events are dropped                                       |
-| `noise`                   | false positives and false negatives are introduced       |
-| `adversarial_suppression` | events from compromised hosts are selectively suppressed |
-| `alert_flood`             | large numbers of low-value synthetic alerts are added    |
-| `duplication`             | generated events are duplicated                          |
+| Mode                      | Interpretation                                                        |
+| ------------------------- | --------------------------------------------------------------------- |
+| `healthy`                 | telemetry is replayed without impairment                              |
+| `delay`                   | events arrive late relative to the audit window                       |
+| `loss`                    | source events are removed before delivery                             |
+| `noise`                   | event attributes or mappings are corrupted                            |
+| `duplication`             | delivered event volume increases through repeated events              |
+| `alert_flood`             | additional flood events increase volume without proportional evidence |
+| `adversarial_suppression` | selected relevant events are removed                                  |
+| `aggregation`             | raw events are grouped into evidence units before belief update       |
+
+Aggregation changes the audit object. A raw replay asks how each event affects the maintained estimate, while an aggregated replay asks how grouped evidence units affect that estimate.
 
 ## Usefulness labels
 
-Delivered events are classified into first-pass diagnostic labels:
+Delivered events or evidence units are classified into audit-relative diagnostic labels:
 
-| Label           | Meaning                                                   |
-| --------------- | --------------------------------------------------------- |
-| `useful`        | event improves belief error or reduces entropy            |
-| `stale`         | event arrives after a configured staleness threshold      |
-| `redundant`     | event produces negligible belief and entropy change       |
-| `misleading`    | event worsens belief error                                |
-| `uninformative` | event arrives but does not help enough to count as useful |
-| `flood`         | synthetic flood/background event                          |
+| Label                      | Meaning                                                                                                   |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `useful`                   | reduces uncertainty or moves the maintained estimate toward the audited scenario state                    |
+| `redundant`                | repeats evidence already reflected in the current belief state                                            |
+| `stale`                    | arrives too late for the relevant audit window                                                            |
+| `misleading`               | moves the maintained estimate away from the audited scenario state or strengthens an unsupported estimate |
+| `flood` / `flood-relative` | belongs to a high-volume or repeated evidence pattern disproportionate to its belief-side contribution    |
 
-These labels are intentionally operational and auditable. They are not presented as universal definitions of analyst usefulness.
+These labels are relative to the belief model, state abstraction, aggregation rule, evidence weighting, and impairment model used in the experiment.
+
+## Data
+
+Raw external datasets are not redistributed in this repository.
+
+The Mordor / OTRF Security Datasets source material should be obtained from the original dataset source, subject to its license and terms of use. This repository includes processed inputs and derived outputs used by the audit experiments where appropriate.
+
+Raw data notes are provided in:
+
+```text
+data/raw/README.md
+docs/datasets/mordor_notes.md
+docs/data/
+```
+
+The processed Mordor-derived input used by the current bridge is:
+
+```text
+data/processed/empire_mimikatz_logonpasswords_events.csv
+```
 
 ## Installation
 
-Create and activate a conda environment:
+Create and activate a Python environment. For example:
 
 ```bash
-conda create -n astra python=3.11
-conda activate astra
+conda create -n alert-usefulness python=3.11
+conda activate alert-usefulness
 ```
 
 Install the project in editable mode:
@@ -91,165 +139,137 @@ Install the project in editable mode:
 pip install -e .
 ```
 
+Install development/test dependencies if they are not already installed:
+
+```bash
+pip install pytest
+```
+
 Run the test suite:
 
 ```bash
 pytest
 ```
 
-Current expected result:
-
-```text
-42 passed
-```
-
 ## Running experiments
 
-Run the baseline synthetic experiment:
+Run the synthetic baseline:
 
 ```bash
 python experiments/exp01_synthetic_separation.py
 ```
 
-Run the impairment sweep:
+Run the synthetic impairment sweep:
 
 ```bash
 python experiments/exp02_impairment_sweep.py
 ```
 
-The sweep writes outputs under:
+Run the Mordor adapter / bridge experiment entry point:
+
+```bash
+python experiments/exp03_mordor_adapter.py
+```
+
+Additional Mordor-specific scripts are available in `scripts/`, including:
 
 ```text
-outputs/tables/
+scripts/extract_mordor_empire_mimikatz.py
+scripts/validate_mordor_extracted_telemetry.py
+scripts/run_mordor_belief_usefulness_experiment.py
+scripts/run_mordor_impairment_experiment.py
+scripts/run_mordor_belief_weight_sensitivity.py
+scripts/run_mordor_event_aggregation_sensitivity.py
+scripts/make_mordor_paper_figures.py
+```
+
+## Key outputs
+
+Derived outputs are committed for inspection and paper review.
+
+Important tables include:
+
+```text
+outputs/tables/mordor_belief_usefulness_summary.csv
+outputs/tables/mordor_impairment_summary.csv
+outputs/tables/mordor_belief_weight_sensitivity.csv
+outputs/tables/mordor_event_aggregation_sensitivity.csv
+outputs/tables/paper_summary_table.csv
+outputs/tables/paper_summary_table.md
+```
+
+Important figures include:
+
+```text
+outputs/figures/mordor_delivery_vs_represented.png
+outputs/figures/mordor_raw_vs_aggregated_usefulness.png
+outputs/figures/mordor_weight_sensitivity.png
+```
+
+Experiment manifests are stored in:
+
+```text
 outputs/manifests/
-outputs/figures/
-outputs/logs/
 ```
 
-Generated outputs are ignored by git by default.
+Logs and local scratch outputs are ignored by git.
 
-## Example first-pass result
+## Current paper-facing result summary
 
-A recent synthetic sweep produced the following pattern:
+The current Mordor bridge shows that delivery volume and belief-side usefulness can separate.
 
-| Experiment              | Delivery rate | Useful-event fraction | Interpretation                                                      |
-| ----------------------- | ------------: | --------------------: | ------------------------------------------------------------------- |
-| baseline                |         1.000 |                 0.967 | high delivery, high usefulness                                      |
-| delay                   |         1.000 |                 0.548 | delivery preserved, usefulness degraded by staleness                |
-| loss                    |         0.697 |                 0.962 | fewer events arrive, but those arriving are often useful            |
-| noise                   |         0.995 |                 0.843 | delivery remains high, usefulness drops                             |
-| adversarial suppression |         0.500 |                 0.935 | many events are missing, but delivered events may still look useful |
-| alert flood             |         6.000 |                 0.161 | alert volume explodes while usefulness collapses                    |
+In the raw healthy Mordor bridge, 6,026 delivered events produce a small number of useful belief updates under the selected scalar host-compromise abstraction, while most repeated events become redundant after belief saturation.
 
-This is the central separation ASTRA is designed to expose:
+The impairment runs show that:
 
-> Delivery rate alone does not certify useful security telemetry.
+* delay can preserve delivery while creating stale updates;
+* loss reduces delivery and represented delivery;
+* noise can increase received volume while reducing represented evidence;
+* duplication and alert flood increase volume without increasing represented source evidence;
+* suppression removes selected source evidence;
+* aggregation reduces repeated saturated updates but changes the audit object.
 
-## Creating figures
+These findings should not be interpreted as operational SOC alert labels. They are audit-relative diagnostics under the declared model.
 
-After running the sweep, create the standard figures:
+## Development notes
 
-```bash
-python - <<'PY'
-from astra.visualization import make_sweep_figures, make_label_count_figure
-
-outputs = make_sweep_figures()
-for name, path in outputs.items():
-    print(name, path)
-
-path = make_label_count_figure(
-    "outputs/tables/exp06_alert_flood_usefulness_label_counts.csv",
-    "outputs/figures/exp06_alert_flood_usefulness_label_counts.png",
-    title="Usefulness-state composition: alert flood",
-)
-print("alert_flood_labels", path)
-PY
-```
-
-Current first-pass figures include:
+Design and interpretation notes are kept in:
 
 ```text
-outputs/figures/delivery_vs_usefulness.png
-outputs/figures/belief_quality.png
-outputs/figures/exp06_alert_flood_usefulness_label_counts.png
+docs/design/
+docs/results/
+docs/data/
+docs/datasets/
 ```
 
-## Configuration files
+These notes document the evolution of the audit framework, Mordor bridge design, aggregation choices, belief saturation interpretation, and state-mapping limitations.
 
-Experiments are configured with YAML files in:
+## Limitations
+
+This repository is a research artifact, not an operational SOC tool.
+
+Important limitations include:
+
+* the belief model is intentionally simple;
+* the main Mordor bridge uses a scalar host-compromise abstraction;
+* usefulness labels depend on the declared state abstraction and evidence weights;
+* aggregation changes the evidence unit being audited;
+* the Mordor bridge is a bounded real-data bridge, not operational SOC validation;
+* no human-subjects, analyst-performance, or cognitive-load study is performed here.
+
+These limitations are intentional and are part of the paper’s scope.
+
+## Citation
+
+Citation metadata is provided in:
 
 ```text
-configs/
+CITATION.cff
 ```
 
-Current configs include:
+Until the associated paper has a final publication record, please cite this repository as the experiment artifact for:
 
-```text
-configs/synthetic_baseline.yaml
-configs/impairment_delay.yaml
-configs/impairment_loss.yaml
-configs/impairment_noise.yaml
-configs/impairment_adversarial_suppression.yaml
-configs/impairment_alert_flood.yaml
-```
-
-Each config specifies an experiment slug, network size, telemetry generation parameters, impairment settings, belief settings, and usefulness-diagnostic thresholds.
-
-## Development workflow
-
-The project has been developed surface-by-surface:
-
-```text
-incident state
-telemetry generation
-telemetry impairment
-defender belief
-usefulness diagnostics
-experiment runner
-visualization
-```
-
-The current branch history follows small, test-backed milestones. Before committing new changes, run:
-
-```bash
-pytest
-git status
-```
-
-## Repository status
-
-At the current artifact checkpoint, ASTRA includes:
-
-* synthetic latent incident-state generation;
-* generated security telemetry;
-* multiple telemetry impairment operators;
-* a defender belief update surface;
-* event-level usefulness diagnostics;
-* experiment orchestration;
-* first-pass figures;
-* a passing test suite.
-
-## Current limitations
-
-ASTRA is currently a synthetic proof-of-concept. Important limitations include:
-
-* the incident-state model is deliberately simple;
-* the belief update model is heuristic rather than a calibrated Bayesian SOC model;
-* usefulness labels are operational proxies;
-* dataset-backed experiments are not yet implemented;
-* figures are first-pass and intended for inspection, not final publication.
-
-These limitations are intentional at this stage. The purpose is to establish the research pipeline and show that telemetry delivery and telemetry usefulness can be separated under controlled conditions.
-
-## Next steps
-
-Near-term development targets:
-
-1. Improve the synthetic experiment note and document the first result.
-2. Add dataset adapters, starting with Mordor / OTRF-style adversary-emulation traces.
-3. Expand usefulness diagnostics for redundancy, misleadingness, and alert fatigue.
-4. Add more paper-facing plots and tables.
-5. Create a reproducibility bundle for the first ASTRA result.
+**Alert Usefulness Under Impaired Security Telemetry**
 
 ## License
 
