@@ -40,8 +40,10 @@ class BeliefConfig:
     # How strongly event_score affects update magnitude.
     score_weight: float = 0.25
 
-    # Synthetic flood events should have little or negative value.
-    synthetic_flood_penalty: float = 0.04
+    # Synthetic flood events are volume-only in the paper experiment.  They do
+    # not directly change compromise belief; their effect is represented by an
+    # independent flood-relative diagnostic flag.
+    synthetic_flood_penalty: float = 0.0
 
     # Small per-time-step relaxation toward the prior.
     # This prevents beliefs from becoming permanently fixed in short experiments.
@@ -73,7 +75,9 @@ EVENT_UPDATE_COLUMNS = [
     "is_synthetic_flood",
     "belief_before",
     "belief_after",
+    "proposed_belief_delta",
     "belief_delta",
+    "is_saturated_update",
     "entropy_before",
     "entropy_after",
     "entropy_delta",
@@ -174,8 +178,9 @@ def _event_type_weight(event_type: str, config: BeliefConfig) -> float:
 def event_belief_delta(event: pd.Series, config: BeliefConfig) -> float:
     """Compute belief delta induced by one delivered event.
 
-    Positive values increase P(compromised). Synthetic flood events apply a small
-    penalty because they consume attention but do not provide incident evidence.
+    Positive values increase P(compromised). Synthetic flood events are assigned
+    zero belief weight in the paper-facing model: they increase delivered volume
+    but do not, by construction, provide compromise evidence.
     """
 
     if bool(event.get("is_synthetic_flood", False)):
@@ -295,9 +300,26 @@ def run_belief_update(
                 before = beliefs[host_id]
                 entropy_before = binary_entropy(before)
 
-                delta = event_belief_delta(event, config)
-                after = _clip_probability(before + delta, config)
+                proposed_delta = event_belief_delta(event, config)
+                after = _clip_probability(before + proposed_delta, config)
                 entropy_after = binary_entropy(after)
+
+                # A saturated update starts at a probability bound and receives
+                # evidence that would push further in the same direction.  This
+                # is deliberately different from merely having a small delta:
+                # zero-weight flood events, for example, are not saturated.
+                is_saturated_update = bool(
+                    (
+                        before >= config.max_probability
+                        and proposed_delta > 0.0
+                        and after >= config.max_probability
+                    )
+                    or (
+                        before <= config.min_probability
+                        and proposed_delta < 0.0
+                        and after <= config.min_probability
+                    )
+                )
 
                 beliefs[host_id] = after
 
@@ -312,7 +334,9 @@ def run_belief_update(
                         "is_synthetic_flood": bool(event["is_synthetic_flood"]),
                         "belief_before": before,
                         "belief_after": after,
+                        "proposed_belief_delta": proposed_delta,
                         "belief_delta": after - before,
+                        "is_saturated_update": is_saturated_update,
                         "entropy_before": entropy_before,
                         "entropy_after": entropy_after,
                         "entropy_delta": entropy_after - entropy_before,

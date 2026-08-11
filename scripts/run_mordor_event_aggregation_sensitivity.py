@@ -28,6 +28,11 @@ from scripts.run_mordor_belief_usefulness_experiment import (
     load_mordor_processed_csv,
     mordor_to_generated_telemetry,
 )
+from scripts.run_mordor_paper_experiment import (
+    belief_config_from_dict,
+    load_config as load_paper_config,
+    usefulness_config_from_dict,
+)
 
 OUTPUT_PATH = (
     PROJECT_ROOT
@@ -37,21 +42,12 @@ OUTPUT_PATH = (
 )
 
 
-def _saturated_updates(event_updates_df: pd.DataFrame) -> int:
-    """Count updates that start and end at the configured saturation value."""
-
-    return int(
-        (
-            (event_updates_df["belief_before"] >= BeliefConfig().max_probability)
-            & (event_updates_df["belief_after"] >= BeliefConfig().max_probability)
-        ).sum()
-    )
-
-
 def run_one(
     generated_df: pd.DataFrame,
     aggregation_mode: str,
     aggregation_window_steps: int | None,
+    belief_config: BeliefConfig,
+    usefulness_config: UsefulnessConfig,
 ) -> dict[str, int | float | str | None]:
     """Run one healthy aggregation sensitivity condition."""
 
@@ -68,14 +64,14 @@ def run_one(
     belief_df, event_updates_df = run_belief_update(
         state_df,
         delivered_df,
-        BeliefConfig(),
+        belief_config,
     )
 
     diagnostics_df = diagnose_event_usefulness(
         state_df,
         delivered_df,
         event_updates_df,
-        UsefulnessConfig(),
+        usefulness_config,
     )
 
     usefulness_summary = summarize_usefulness(
@@ -85,7 +81,7 @@ def run_one(
     )
     belief_summary = summarize_belief(belief_df)
 
-    saturated_updates = _saturated_updates(event_updates_df)
+    saturated_updates = int(usefulness_summary["saturated_events"])
 
     source_event_count = (
         int(generated_df["source_event_count"].sum())
@@ -98,13 +94,13 @@ def run_one(
         "impairment_mode": ImpairmentMode.HEALTHY.value,
         "aggregation_mode": aggregation_mode,
         "aggregation_window_steps": aggregation_window_steps,
+        "aggregation_window_seconds": aggregation_window_steps,
         "generated_events": usefulness_summary["generated_events"],
         "delivered_events": usefulness_summary["delivered_events"],
         "source_event_count": source_event_count,
         "useful_events": usefulness_summary["useful_events"],
         "redundant_events": usefulness_summary["redundant_events"],
         "misleading_events": usefulness_summary["misleading_events"],
-        "uninformative_events": usefulness_summary["uninformative_events"],
         "flood_events": usefulness_summary["flood_events"],
         "useful_event_fraction": usefulness_summary["useful_event_fraction"],
         "redundant_event_fraction": usefulness_summary["redundant_event_fraction"],
@@ -123,12 +119,17 @@ def run_event_aggregation_sensitivity() -> pd.DataFrame:
 
     mordor_df = load_mordor_processed_csv()
     raw_generated_df = mordor_to_generated_telemetry(mordor_df)
+    paper_config = load_paper_config()
+    belief_config = belief_config_from_dict(paper_config)
+    usefulness_config = usefulness_config_from_dict(paper_config)
 
     records = [
         run_one(
             raw_generated_df,
             aggregation_mode="raw",
             aggregation_window_steps=None,
+            belief_config=belief_config,
+            usefulness_config=usefulness_config,
         )
     ]
 
@@ -142,6 +143,8 @@ def run_event_aggregation_sensitivity() -> pd.DataFrame:
                 aggregated_df,
                 aggregation_mode="aggregated",
                 aggregation_window_steps=window_steps,
+                belief_config=belief_config,
+                usefulness_config=usefulness_config,
             )
         )
 

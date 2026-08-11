@@ -58,6 +58,7 @@ LABEL_COUNTS_OUTPUT_PATH = (
 )
 
 SCENARIO = "empire_mimikatz_logonpasswords"
+TIME_UNIT = "seconds"
 
 
 SEVERITY_TO_SCORE = {
@@ -118,9 +119,11 @@ def mordor_to_generated_telemetry(mordor_df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(["timestamp", "host", "event_type"]).reset_index(drop=True)
 
     first_timestamp = df["timestamp"].min()
-    df["time"] = (
-        (df["timestamp"] - first_timestamp).dt.total_seconds() // 60
-    ).astype(int)
+    # Preserve the event trace at one-second resolution.  Earlier versions of
+    # this bridge quantized to minutes, which collapsed this short Mordor trace
+    # into only four time values and made 5/10/30-unit aggregation windows
+    # effectively indistinguishable.
+    df["time"] = (df["timestamp"] - first_timestamp).dt.total_seconds().astype(int)
 
     df["event_id"] = [f"{SCENARIO}-{idx:06d}" for idx in range(len(df))]
     df["host_id"] = df["host"].astype(str)
@@ -249,8 +252,15 @@ def build_state_from_generated(
     hosts = sorted(generated_df["host_id"].astype(str).unique())
     times = list(range(0, max_time + 1))
 
+    sort_columns = ["time", "host_id"]
+    if "event_id" in generated_df.columns:
+        # event_id is assigned in source timestamp order for the Mordor bridge,
+        # so this makes the within-second "keep last" state rule explicit and
+        # deterministic when several records share a host/time bucket.
+        sort_columns.append("event_id")
+
     observations = (
-        generated_df.sort_values(["time", "host_id"])
+        generated_df.sort_values(sort_columns)
         .drop_duplicates(["time", "host_id"], keep="last")
         [["time", "host_id", "source_state"]]
         .rename(columns={"source_state": "state"})

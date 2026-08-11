@@ -23,7 +23,7 @@ The repository supports an alert-usefulness audit framework for distinguishing:
 
 Usefulness is interpreted in a narrow audit-relative sense: contribution to a specified belief-maintenance process under an explicit belief model, state abstraction, aggregation rule, and impairment model.
 
-The audit labels delivered events or evidence units using diagnostic states such as useful, redundant, stale, misleading, and flood-relative. These labels are not universal operational SOC labels. They describe how evidence behaves under the declared audit design.
+The audit assigns each delivered event or evidence unit one primary usefulness outcome (`useful`, `redundant`, or `misleading`) and records `stale`, `saturated`, and `flood-relative` as independent diagnostic flags. These outcomes and flags are not universal operational SOC labels. They describe how evidence behaves under the declared audit design.
 
 ## Paper framing
 
@@ -90,19 +90,25 @@ The experiments include controlled conditions such as:
 
 Aggregation changes the audit object. A raw replay asks how each event affects the maintained estimate, while an aggregated replay asks how grouped evidence units affect that estimate.
 
-## Usefulness labels
+## Usefulness outcomes and flags
 
-Delivered events or evidence units are classified into audit-relative diagnostic labels:
+Delivered events or evidence units receive exactly one audit-relative primary outcome:
 
-| Label                      | Meaning                                                                                                   |
-| -------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `useful`                   | reduces uncertainty or moves the maintained estimate toward the audited scenario state                    |
-| `redundant`                | repeats evidence already reflected in the current belief state                                            |
-| `stale`                    | arrives too late for the relevant audit window                                                            |
-| `misleading`               | moves the maintained estimate away from the audited scenario state or strengthens an unsupported estimate |
-| `flood` / `flood-relative` | belongs to a high-volume or repeated evidence pattern disproportionate to its belief-side contribution    |
+| Primary outcome | Meaning                                                                                                   |
+| --------------- | --------------------------------------------------------------------------------------------------------- |
+| `useful`        | materially reduces belief error, or reduces entropy when error change is below the declared threshold     |
+| `redundant`     | produces no material improvement or worsening under the declared thresholds                              |
+| `misleading`    | materially increases belief error relative to the audited scenario state                                 |
 
-These labels are relative to the belief model, state abstraction, aggregation rule, evidence weighting, and impairment model used in the experiment.
+Three non-exclusive flags are recorded separately:
+
+| Flag             | Meaning                                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| `stale`          | delivery latency exceeds the declared audit window                                                       |
+| `saturated`      | belief is already at a configured probability bound and same-direction evidence cannot move it further  |
+| `flood-relative` | the event was injected by the controlled alert-flood condition in the paper experiment                  |
+
+The primary outcome and flags can overlap. For example, an update may be `redundant` and also `stale`, or `redundant` and `flood-relative`. All outcomes and flags are relative to the belief model, state abstraction, aggregation rule, evidence weighting, thresholds, and impairment model used in the experiment.
 
 ## Data
 
@@ -171,6 +177,20 @@ Run the Mordor adapter / bridge experiment entry point:
 python experiments/exp03_mordor_adapter.py
 ```
 
+Run the canonical paper-facing reproducibility experiment:
+
+```bash
+python scripts/run_mordor_paper_experiment.py
+```
+
+Its exact parameters are declared in:
+
+```text
+configs/mordor_paper_experiment.yaml
+```
+
+The paper experiment uses one-second timestamp resolution, 5/10/30-second aggregation windows, ten fixed random seeds for the requested multi-level loss/delay/flood sweeps, and a fixed seed for the secondary single-level noise, duplication, and suppression checks. The generated manifest records the input SHA-256, Git commit, configuration, and output paths.
+
 Additional Mordor-specific scripts are available in `scripts/`, including:
 
 ```text
@@ -180,6 +200,7 @@ scripts/run_mordor_belief_usefulness_experiment.py
 scripts/run_mordor_impairment_experiment.py
 scripts/run_mordor_belief_weight_sensitivity.py
 scripts/run_mordor_event_aggregation_sensitivity.py
+scripts/run_mordor_paper_experiment.py
 scripts/make_mordor_paper_figures.py
 ```
 
@@ -194,6 +215,9 @@ outputs/tables/mordor_belief_usefulness_summary.csv
 outputs/tables/mordor_impairment_summary.csv
 outputs/tables/mordor_belief_weight_sensitivity.csv
 outputs/tables/mordor_event_aggregation_sensitivity.csv
+outputs/tables/mordor_paper_runs.csv
+outputs/tables/mordor_paper_summary.csv
+outputs/tables/mordor_paper_aggregation.csv
 outputs/tables/paper_summary_table.csv
 outputs/tables/paper_summary_table.md
 ```
@@ -210,6 +234,12 @@ Experiment manifests are stored in:
 
 ```text
 outputs/manifests/
+```
+
+The canonical paper run writes:
+
+```text
+outputs/manifests/mordor_paper_experiment.json
 ```
 
 Logs and local scratch outputs are ignored by git.
@@ -242,7 +272,7 @@ docs/data/
 docs/datasets/
 ```
 
-These notes document the evolution of the audit framework, Mordor bridge design, aggregation choices, belief saturation interpretation, and state-mapping limitations.
+These notes document the evolution of the audit framework, Mordor bridge design, aggregation choices, belief saturation interpretation, and state-mapping limitations. Some files in `docs/results/` and older non-`mordor_paper_*` outputs preserve exploratory pre-revision runs; for the current paper-facing experiment, `docs/design/mordor_paper_experimental_contract.md`, `configs/mordor_paper_experiment.yaml`, and the `mordor_paper_*` outputs are authoritative.
 
 ## Limitations
 

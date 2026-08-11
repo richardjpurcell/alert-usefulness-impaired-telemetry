@@ -205,3 +205,19 @@ def test_noise_adds_false_positives_and_can_drop_true_signals():
     assert (
         delivered_df["impairment_status"] == "synthetic_false_positive"
     ).sum() == expected_false_positives
+
+def test_alert_flood_accepts_fractional_multiplier():
+    telemetry_df = _sample_telemetry()
+
+    delivered_df = apply_impairment(
+        telemetry_df,
+        ImpairmentConfig(
+            mode=ImpairmentMode.ALERT_FLOOD.value,
+            seed=1,
+            flood_multiplier=0.5,
+        ),
+    )
+
+    expected_flood = int(round(len(telemetry_df) * 0.5))
+    assert int(delivered_df["is_synthetic_flood"].sum()) == expected_flood
+    assert len(delivered_df) == len(telemetry_df) + expected_flood

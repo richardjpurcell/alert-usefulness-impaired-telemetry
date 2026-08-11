@@ -54,7 +54,7 @@ def test_mordor_to_generated_telemetry_schema():
     ]
 
     assert len(generated_df) == 4
-    assert generated_df["time"].tolist() == [0, 1, 2, 3]
+    assert generated_df["time"].tolist() == [0, 60, 120, 180]
     assert generated_df["event_score"].tolist() == [0.2, 0.9, 0.6, 0.2]
     assert generated_df["is_true_signal"].tolist() == [False, True, True, False]
 
@@ -112,7 +112,7 @@ def test_aggregate_generated_telemetry_preserves_required_columns():
     )
 
     generated_df = mordor_to_generated_telemetry(_sample_mordor_df())
-    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=300)
 
     assert {
         "event_id",
@@ -154,7 +154,7 @@ def test_aggregate_generated_telemetry_reduces_repeated_records():
         )
     )
 
-    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=300)
 
     assert len(aggregated_df) == 1
     assert aggregated_df.loc[0, "source_event_count"] == 3
@@ -180,7 +180,7 @@ def test_aggregate_generated_telemetry_uses_max_event_score():
         )
     )
 
-    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=5)
+    aggregated_df = aggregate_generated_telemetry(generated_df, window_steps=300)
 
     assert aggregated_df.loc[0, "event_score"] == 0.9
     assert aggregated_df.loc[0, "max_event_score"] == 0.9
@@ -265,3 +265,47 @@ def test_mordor_to_generated_telemetry_uses_state_normalization():
         "suspicious",
     ]
     assert generated_df["is_true_signal"].tolist() == [False, True, True]
+
+
+def test_canonical_paper_experiment_repeats_requested_modes_across_seeds(tmp_path):
+    import yaml
+
+    from scripts.run_mordor_paper_experiment import load_config, run_paper_experiment
+
+    input_path = Path(tmp_path) / "sample_mordor.csv"
+    _sample_mordor_df().to_csv(input_path, index=False)
+
+    config = load_config()
+    config["experiment"]["seeds"] = [1, 2]
+    config["experiment"]["fixed_seed"] = 1
+
+    config_path = Path(tmp_path) / "paper_config.yaml"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    runs_df, summary_df, aggregation_df = run_paper_experiment(
+        input_path=input_path,
+        config_path=config_path,
+    )
+
+    assert not runs_df.empty
+    assert not summary_df.empty
+    assert not aggregation_df.empty
+
+    repeated = summary_df[
+        summary_df["impairment_mode"].isin(["delay", "loss", "alert_flood"])
+    ]
+    assert (repeated["n_runs"] == 2).all()
+
+    fixed = summary_df[
+        summary_df["impairment_mode"].isin(
+            ["noise", "duplication", "adversarial_suppression"]
+        )
+    ]
+    assert (fixed["n_runs"] == 1).all()
+
+    assert set(
+        aggregation_df.loc[
+            aggregation_df["aggregation_mode"] == "aggregated",
+            "aggregation_window_seconds",
+        ].astype(int)
+    ) == {5, 10, 30}

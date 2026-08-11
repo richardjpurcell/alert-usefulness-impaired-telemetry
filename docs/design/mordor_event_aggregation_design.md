@@ -215,7 +215,7 @@ source_event_count
 useful_events
 redundant_events
 misleading_events
-uninformative_events
+saturated_events
 flood_events
 useful_event_fraction
 redundant_event_fraction

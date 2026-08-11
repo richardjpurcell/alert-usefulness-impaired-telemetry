@@ -63,7 +63,9 @@ class ImpairmentConfig:
     duplicate_probability: float = 0.30
 
     # Alert flood
-    flood_multiplier: int = 3
+    # Additional synthetic flood volume relative to the source-event count.
+    # Floats allow bounded levels such as 0.5x, 1x, and 2x additional volume.
+    flood_multiplier: float = 3.0
     flood_event_type: str = "low_value_network_alert"
     flood_score_range: tuple[float, float] = (0.05, 0.25)
 
@@ -355,7 +357,7 @@ def _apply_alert_flood(
             ["delivery_time", "host_id", "event_id"]
         ).reset_index(drop=True)
 
-    num_flood_events = len(telemetry_df) * config.flood_multiplier
+    num_flood_events = int(round(len(telemetry_df) * config.flood_multiplier))
     times = telemetry_df["time"].astype(int).to_numpy()
     host_ids = telemetry_df["host_id"].astype(str).unique()
 

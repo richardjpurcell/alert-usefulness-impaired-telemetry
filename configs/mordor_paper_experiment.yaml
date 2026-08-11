@@ -1,0 +1,68 @@
+experiment:
+  name: mordor_paper_reproducibility
+  scenario: empire_mimikatz_logonpasswords
+  time_unit: seconds
+  seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  fixed_seed: 1
+
+mordor_mapping:
+  severity_to_score:
+    low: 0.20
+    medium: 0.60
+    high: 0.90
+  unknown_state: suspicious
+  true_signal_states: [suspicious, compromised]
+
+belief:
+  prior_compromise_probability: 0.05
+  # The Mordor bridge retains raw source event types. They do not match the
+  # synthetic auth/endpoint/network classes, so the paper experiment makes the
+  # resulting zero base weight explicit rather than relying on fall-through.
+  auth_alert_weight: 0.0
+  endpoint_alert_weight: 0.0
+  network_alert_weight: 0.0
+  score_weight: 0.25
+  synthetic_flood_penalty: 0.0
+  # Equivalent to approximately 1% relaxation toward the prior per minute when
+  # the experiment is represented at one-second resolution.
+  decay_to_prior: 0.00016749156927908793
+  min_probability: 0.001
+  max_probability: 0.999
+
+usefulness:
+  min_error_improvement: 0.01
+  min_error_worsening: 0.01
+  min_abs_entropy_delta: 0.005
+  stale_after_seconds: 180
+  primary_outcomes: [useful, redundant, misleading]
+  independent_flags: [stale, saturated, flood_relative]
+
+impairments:
+  delay:
+    affected_event_fraction: 0.30
+    delay_seconds: [60, 240, 600]
+  loss:
+    drop_probability: [0.10, 0.30, 0.50]
+  alert_flood:
+    # Additional synthetic events relative to source-event count.
+    flood_multiplier: [0.5, 1.0, 2.0]
+  noise:
+    false_positive_rate: 0.20
+    false_negative_rate: 0.20
+    noise_score_range: [0.10, 0.45]
+  duplication:
+    duplicate_probability: 0.30
+  adversarial_suppression:
+    suppression_probability: 0.50
+    suppress_compromised_host_events: true
+
+aggregation:
+  window_seconds: [5, 10, 30]
+  grouping_keys:
+    - host_id
+    - aggregation_window_start
+    - aggregation_window_end
+    - event_type
+    - source_state
+  event_score_rule: max
+  true_signal_rule: any

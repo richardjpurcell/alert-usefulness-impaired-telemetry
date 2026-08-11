@@ -86,6 +86,9 @@ def test_diagnose_event_usefulness_columns():
         "belief_error_after",
         "belief_error_delta",
         "usefulness_label",
+        "stale_flag",
+        "saturated_flag",
+        "flood_relative_flag",
     }
 
 
@@ -107,13 +110,13 @@ def test_delay_can_create_stale_events():
     )
 
     assert not diagnostics_df.empty
-    assert (diagnostics_df["usefulness_label"] == UsefulnessLabel.STALE.value).all()
+    assert diagnostics_df["stale_flag"].all()
+    assert set(diagnostics_df["usefulness_label"]).issubset(
+        {label.value for label in UsefulnessLabel}
+    )
 
-    assert not diagnostics_df.empty
-    assert (diagnostics_df["usefulness_label"] == UsefulnessLabel.STALE.value).all()
 
-
-def test_alert_flood_creates_flood_labels():
+def test_alert_flood_creates_independent_flood_flags():
     *_, diagnostics_df = _pipeline(
         mode=ImpairmentMode.ALERT_FLOOD.value,
         impairment_config_kwargs={
@@ -121,7 +124,9 @@ def test_alert_flood_creates_flood_labels():
         },
     )
 
-    assert (diagnostics_df["usefulness_label"] == UsefulnessLabel.FLOOD.value).any()
+    flood_df = diagnostics_df[diagnostics_df["flood_relative_flag"]]
+    assert not flood_df.empty
+    assert (flood_df["usefulness_label"] == UsefulnessLabel.REDUNDANT.value).all()
 
 
 def test_summarize_usefulness_returns_expected_keys():
@@ -140,15 +145,17 @@ def test_summarize_usefulness_returns_expected_keys():
         "represented_delivery_rate",
         "updated_events",
         "useful_events",
-        "stale_events",
         "redundant_events",
         "misleading_events",
-        "uninformative_events",
-        "flood_events",
         "useful_event_fraction",
-        "stale_event_fraction",
         "redundant_event_fraction",
         "misleading_event_fraction",
+        "stale_events",
+        "saturated_events",
+        "flood_events",
+        "stale_event_fraction",
+        "saturated_event_fraction",
+        "flood_event_fraction",
         "mean_latency",
         "mean_belief_delta",
         "mean_entropy_delta",
@@ -168,14 +175,12 @@ def test_usefulness_summary_counts_match_diagnostics():
 
     counted = (
         summary["useful_events"]
-        + summary["stale_events"]
         + summary["redundant_events"]
         + summary["misleading_events"]
-        + summary["uninformative_events"]
-        + summary["flood_events"]
     )
 
     assert counted == len(diagnostics_df)
+    assert summary["flood_events"] > 0
 
 
 def test_usefulness_label_counts_returns_dataframe():

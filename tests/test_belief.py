@@ -91,14 +91,16 @@ def test_event_updates_have_expected_columns():
         "is_synthetic_flood",
         "belief_before",
         "belief_after",
+        "proposed_belief_delta",
         "belief_delta",
+        "is_saturated_update",
         "entropy_before",
         "entropy_after",
         "entropy_delta",
     }
 
 
-def test_alert_flood_events_can_reduce_belief():
+def test_alert_flood_events_have_zero_belief_weight_by_default():
     state_df, delivered_df = _sample_state_and_delivered()
 
     flooded_df = apply_impairment(
@@ -123,13 +125,15 @@ def test_alert_flood_events_can_reduce_belief():
     _, event_updates_df = run_belief_update(
         state_df,
         flooded_df,
-        BeliefConfig(synthetic_flood_penalty=0.04),
+        BeliefConfig(),
     )
 
     flood_updates = event_updates_df[event_updates_df["is_synthetic_flood"]]
 
     assert not flood_updates.empty
-    assert (flood_updates["belief_delta"] <= 0).all()
+    assert (flood_updates["proposed_belief_delta"] == 0).all()
+    assert (flood_updates["belief_delta"] == 0).all()
+    assert not flood_updates["is_saturated_update"].any()
 
 
 def test_summarize_belief_returns_expected_keys():

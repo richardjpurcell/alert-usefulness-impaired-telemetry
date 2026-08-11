@@ -9,7 +9,7 @@ It does not change ASTRA's default model.
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 import pandas as pd
@@ -29,6 +29,11 @@ from scripts.run_mordor_belief_usefulness_experiment import (
     load_mordor_processed_csv,
     mordor_to_generated_telemetry,
 )
+from scripts.run_mordor_paper_experiment import (
+    belief_config_from_dict,
+    load_config as load_paper_config,
+    usefulness_config_from_dict,
+)
 
 OUTPUT_PATH = (
     PROJECT_ROOT
@@ -41,40 +46,24 @@ OUTPUT_PATH = (
 def belief_configs() -> list[tuple[str, BeliefConfig]]:
     """Return belief configurations for sensitivity comparison."""
 
+    base = belief_config_from_dict(load_paper_config())
+
     return [
         (
             "default",
-            BeliefConfig(),
+            base,
         ),
         (
             "half_weights",
-            BeliefConfig(
-                auth_alert_weight=0.04,
-                endpoint_alert_weight=0.09,
-                network_alert_weight=0.06,
-                score_weight=0.125,
-                synthetic_flood_penalty=0.04,
-            ),
+            replace(base, score_weight=base.score_weight * 0.5),
         ),
         (
             "quarter_weights",
-            BeliefConfig(
-                auth_alert_weight=0.02,
-                endpoint_alert_weight=0.045,
-                network_alert_weight=0.03,
-                score_weight=0.0625,
-                synthetic_flood_penalty=0.04,
-            ),
+            replace(base, score_weight=base.score_weight * 0.25),
         ),
         (
             "low_weights",
-            BeliefConfig(
-                auth_alert_weight=0.01,
-                endpoint_alert_weight=0.025,
-                network_alert_weight=0.015,
-                score_weight=0.035,
-                synthetic_flood_penalty=0.04,
-            ),
+            replace(base, score_weight=0.035),
         ),
     ]
 
@@ -96,6 +85,7 @@ def run_weight_sensitivity() -> pd.DataFrame:
     )
 
     records = []
+    usefulness_config = usefulness_config_from_dict(load_paper_config())
 
     for config_name, belief_config in belief_configs():
         belief_df, event_updates_df = run_belief_update(
@@ -108,7 +98,7 @@ def run_weight_sensitivity() -> pd.DataFrame:
             state_df,
             delivered_df,
             event_updates_df,
-            UsefulnessConfig(),
+            usefulness_config,
         )
 
         usefulness_summary = summarize_usefulness(
@@ -120,12 +110,7 @@ def run_weight_sensitivity() -> pd.DataFrame:
 
         config_dict = asdict(belief_config)
 
-        saturated_updates = int(
-            (
-                (event_updates_df["belief_before"] >= belief_config.max_probability)
-                & (event_updates_df["belief_after"] >= belief_config.max_probability)
-            ).sum()
-        )
+        saturated_updates = int(usefulness_summary["saturated_events"])
 
         records.append(
             {
@@ -141,7 +126,6 @@ def run_weight_sensitivity() -> pd.DataFrame:
                 "useful_events": usefulness_summary["useful_events"],
                 "redundant_events": usefulness_summary["redundant_events"],
                 "misleading_events": usefulness_summary["misleading_events"],
-                "uninformative_events": usefulness_summary["uninformative_events"],
                 "useful_event_fraction": usefulness_summary["useful_event_fraction"],
                 "redundant_event_fraction": usefulness_summary[
                     "redundant_event_fraction"

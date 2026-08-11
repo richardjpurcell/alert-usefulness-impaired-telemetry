@@ -29,14 +29,16 @@ from astra.incident_state import HostState
 
 
 class UsefulnessLabel(StrEnum):
-    """Event-level usefulness labels."""
+    """Primary event-level usefulness outcomes.
+
+    Every delivered event receives exactly one of these outcomes.  Staleness,
+    saturation, and flood-relative status are represented separately as flags
+    because they may coexist with any primary outcome.
+    """
 
     USEFUL = "useful"
-    STALE = "stale"
     REDUNDANT = "redundant"
     MISLEADING = "misleading"
-    UNINFORMATIVE = "uninformative"
-    FLOOD = "flood"
 
 
 @dataclass(frozen=True)
@@ -44,7 +46,6 @@ class UsefulnessConfig:
     """Configuration for usefulness diagnostics."""
 
     stale_after_steps: int = 3
-    min_abs_belief_delta: float = 0.01
     min_abs_entropy_delta: float = 0.005
 
     # Useful if error improves by at least this much.
@@ -52,13 +53,6 @@ class UsefulnessConfig:
 
     # Misleading if error worsens by at least this much.
     min_error_worsening: float = 0.01
-
-    # If true, staleness dominates other labels.
-    label_stale_first: bool = True
-
-    # If true, synthetic flood events get their own label.
-    label_flood_first: bool = True
-
 
 EVENT_DIAGNOSTIC_COLUMNS = [
     "event_id",
@@ -82,6 +76,9 @@ EVENT_DIAGNOSTIC_COLUMNS = [
     "belief_error_after",
     "belief_error_delta",
     "usefulness_label",
+    "stale_flag",
+    "saturated_flag",
+    "flood_relative_flag",
 ]
 
 
@@ -96,15 +93,17 @@ SUMMARY_COLUMNS = [
     "represented_delivery_rate",
     "updated_events",
     "useful_events",
-    "stale_events",
     "redundant_events",
     "misleading_events",
-    "uninformative_events",
-    "flood_events",
     "useful_event_fraction",
-    "stale_event_fraction",
     "redundant_event_fraction",
     "misleading_event_fraction",
+    "stale_events",
+    "saturated_events",
+    "flood_events",
+    "stale_event_fraction",
+    "saturated_event_fraction",
+    "flood_event_fraction",
     "mean_latency",
     "mean_belief_delta",
     "mean_entropy_delta",
@@ -119,7 +118,6 @@ def validate_usefulness_config(config: UsefulnessConfig) -> None:
         raise ValueError("stale_after_steps cannot be negative.")
 
     for name, value in [
-        ("min_abs_belief_delta", config.min_abs_belief_delta),
         ("min_abs_entropy_delta", config.min_abs_entropy_delta),
         ("min_error_improvement", config.min_error_improvement),
         ("min_error_worsening", config.min_error_worsening),
@@ -213,28 +211,16 @@ def classify_event_usefulness(
     config = config or UsefulnessConfig()
     validate_usefulness_config(config)
 
-    if config.label_flood_first and bool(row["is_synthetic_flood"]):
-        return UsefulnessLabel.FLOOD.value
-
-    if config.label_stale_first and int(row["latency"]) > config.stale_after_steps:
-        return UsefulnessLabel.STALE.value
-
     if float(row["belief_error_delta"]) >= config.min_error_worsening:
         return UsefulnessLabel.MISLEADING.value
 
     if float(row["belief_error_delta"]) <= -config.min_error_improvement:
         return UsefulnessLabel.USEFUL.value
 
-    small_belief_change = abs(float(row["belief_delta"])) < config.min_abs_belief_delta
-    small_entropy_change = abs(float(row["entropy_delta"])) < config.min_abs_entropy_delta
-
-    if small_belief_change and small_entropy_change:
-        return UsefulnessLabel.REDUNDANT.value
-
     if float(row["entropy_delta"]) <= -config.min_abs_entropy_delta:
         return UsefulnessLabel.USEFUL.value
 
-    return UsefulnessLabel.UNINFORMATIVE.value
+    return UsefulnessLabel.REDUNDANT.value
 
 
 def diagnose_event_usefulness(
@@ -342,6 +328,9 @@ def diagnose_event_usefulness(
             pd.Series(record),
             config,
         )
+        record["stale_flag"] = bool(latency > config.stale_after_steps)
+        record["saturated_flag"] = bool(row["is_saturated_update"])
+        record["flood_relative_flag"] = bool(row["is_synthetic_flood"])
 
         records.append(record)
 
@@ -371,11 +360,12 @@ def summarize_usefulness(
     }
 
     useful_events = label_counts[UsefulnessLabel.USEFUL.value]
-    stale_events = label_counts[UsefulnessLabel.STALE.value]
     redundant_events = label_counts[UsefulnessLabel.REDUNDANT.value]
     misleading_events = label_counts[UsefulnessLabel.MISLEADING.value]
-    uninformative_events = label_counts[UsefulnessLabel.UNINFORMATIVE.value]
-    flood_events = label_counts[UsefulnessLabel.FLOOD.value]
+
+    stale_events = int(diagnostics_df["stale_flag"].sum())
+    saturated_events = int(diagnostics_df["saturated_flag"].sum())
+    flood_events = int(diagnostics_df["flood_relative_flag"].sum())
 
     delivered_events = int(base["delivered_events"])
 
@@ -399,15 +389,17 @@ def summarize_usefulness(
         **base,
         "updated_events": updated_events,
         "useful_events": useful_events,
-        "stale_events": stale_events,
         "redundant_events": redundant_events,
         "misleading_events": misleading_events,
-        "uninformative_events": uninformative_events,
-        "flood_events": flood_events,
         "useful_event_fraction": fraction(useful_events),
-        "stale_event_fraction": fraction(stale_events),
         "redundant_event_fraction": fraction(redundant_events),
         "misleading_event_fraction": fraction(misleading_events),
+        "stale_events": stale_events,
+        "saturated_events": saturated_events,
+        "flood_events": flood_events,
+        "stale_event_fraction": fraction(stale_events),
+        "saturated_event_fraction": fraction(saturated_events),
+        "flood_event_fraction": fraction(flood_events),
         "mean_latency": mean_latency,
         "mean_belief_delta": mean_belief_delta,
         "mean_entropy_delta": mean_entropy_delta,

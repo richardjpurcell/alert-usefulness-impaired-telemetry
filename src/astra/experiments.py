@@ -159,7 +159,7 @@ def _build_impairment_config(config: dict[str, Any]) -> ImpairmentConfig:
         false_positive_rate=float(impairment.get("false_positive_rate", 0.20)),
         false_negative_rate=float(impairment.get("false_negative_rate", 0.20)),
         duplicate_probability=float(impairment.get("duplicate_probability", 0.30)),
-        flood_multiplier=int(impairment.get("flood_multiplier", 3)),
+        flood_multiplier=float(impairment.get("flood_multiplier", 3.0)),
         flood_event_type=str(
             impairment.get("flood_event_type", "low_value_network_alert")
         ),
@@ -183,8 +183,10 @@ def _build_belief_config(config: dict[str, Any]) -> BeliefConfig:
         endpoint_alert_weight=float(belief.get("endpoint_alert_weight", 0.18)),
         network_alert_weight=float(belief.get("network_alert_weight", 0.12)),
         score_weight=float(belief.get("score_weight", 0.25)),
-        synthetic_flood_penalty=float(belief.get("synthetic_flood_penalty", 0.04)),
+        synthetic_flood_penalty=float(belief.get("synthetic_flood_penalty", 0.0)),
         decay_to_prior=float(belief.get("decay_to_prior", 0.01)),
+        min_probability=float(belief.get("min_probability", 0.001)),
+        max_probability=float(belief.get("max_probability", 0.999)),
     )
 
 
@@ -195,12 +197,9 @@ def _build_usefulness_config(config: dict[str, Any]) -> UsefulnessConfig:
 
     return UsefulnessConfig(
         stale_after_steps=int(usefulness.get("stale_after_steps", 3)),
-        min_abs_belief_delta=float(usefulness.get("min_abs_belief_delta", 0.01)),
         min_abs_entropy_delta=float(usefulness.get("min_abs_entropy_delta", 0.005)),
         min_error_improvement=float(usefulness.get("min_error_improvement", 0.01)),
         min_error_worsening=float(usefulness.get("min_error_worsening", 0.01)),
-        label_stale_first=bool(usefulness.get("label_stale_first", True)),
-        label_flood_first=bool(usefulness.get("label_flood_first", True)),
     )
 
 
