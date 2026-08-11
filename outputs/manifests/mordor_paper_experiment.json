@@ -1,0 +1,128 @@
+{
+  "experiment": "mordor_paper_reproducibility",
+  "scenario": "empire_mimikatz_logonpasswords",
+  "git_commit": "c390a48f55ef9cfbf7c58da63cb97998d7ee470f",
+  "git_working_tree_dirty": true,
+  "input_path": "data/processed/empire_mimikatz_logonpasswords_events.csv",
+  "input_sha256": "ef1c1b547a7d67db5fad6b36525dd3c7de96f210cf9ab08d244d1c291d3069c1",
+  "config_path": "configs/mordor_paper_experiment.yaml",
+  "config": {
+    "experiment": {
+      "name": "mordor_paper_reproducibility",
+      "scenario": "empire_mimikatz_logonpasswords",
+      "time_unit": "seconds",
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "fixed_seed": 1
+    },
+    "mordor_mapping": {
+      "severity_to_score": {
+        "low": 0.2,
+        "medium": 0.6,
+        "high": 0.9
+      },
+      "unknown_state": "suspicious",
+      "true_signal_states": [
+        "suspicious",
+        "compromised"
+      ]
+    },
+    "belief": {
+      "prior_compromise_probability": 0.05,
+      "auth_alert_weight": 0.0,
+      "endpoint_alert_weight": 0.0,
+      "network_alert_weight": 0.0,
+      "score_weight": 0.25,
+      "synthetic_flood_penalty": 0.0,
+      "decay_to_prior": 0.00016749156927908793,
+      "min_probability": 0.001,
+      "max_probability": 0.999
+    },
+    "usefulness": {
+      "min_error_improvement": 0.01,
+      "min_error_worsening": 0.01,
+      "min_abs_entropy_delta": 0.005,
+      "stale_after_seconds": 180,
+      "primary_outcomes": [
+        "useful",
+        "redundant",
+        "misleading"
+      ],
+      "independent_flags": [
+        "stale",
+        "saturated",
+        "flood_relative"
+      ]
+    },
+    "impairments": {
+      "delay": {
+        "affected_event_fraction": 0.3,
+        "delay_seconds": [
+          60,
+          240,
+          600
+        ]
+      },
+      "loss": {
+        "drop_probability": [
+          0.1,
+          0.3,
+          0.5
+        ]
+      },
+      "alert_flood": {
+        "flood_multiplier": [
+          0.5,
+          1.0,
+          2.0
+        ]
+      },
+      "noise": {
+        "false_positive_rate": 0.2,
+        "false_negative_rate": 0.2,
+        "noise_score_range": [
+          0.1,
+          0.45
+        ]
+      },
+      "duplication": {
+        "duplicate_probability": 0.3
+      },
+      "adversarial_suppression": {
+        "suppression_probability": 0.5,
+        "suppress_compromised_host_events": true
+      }
+    },
+    "aggregation": {
+      "window_seconds": [
+        5,
+        10,
+        30
+      ],
+      "grouping_keys": [
+        "host_id",
+        "aggregation_window_start",
+        "aggregation_window_end",
+        "event_type",
+        "source_state"
+      ],
+      "event_score_rule": "max",
+      "true_signal_rule": "any"
+    }
+  },
+  "outputs": {
+    "runs": "outputs/tables/mordor_paper_runs.csv",
+    "summary": "outputs/tables/mordor_paper_summary.csv",
+    "aggregation": "outputs/tables/mordor_paper_aggregation.csv"
+  }
+}
