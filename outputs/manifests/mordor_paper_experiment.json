@@ -1,8 +1,8 @@
 {
   "experiment": "mordor_paper_reproducibility",
   "scenario": "empire_mimikatz_logonpasswords",
-  "git_commit": "c390a48f55ef9cfbf7c58da63cb97998d7ee470f",
-  "git_working_tree_dirty": true,
+  "git_commit": "3e6dc768e787d3b55683f8c34ff9f4115866f7d2",
+  "git_working_tree_dirty": false,
   "input_path": "data/processed/empire_mimikatz_logonpasswords_events.csv",
   "input_sha256": "ef1c1b547a7d67db5fad6b36525dd3c7de96f210cf9ab08d244d1c291d3069c1",
   "config_path": "configs/mordor_paper_experiment.yaml",
