@@ -1,0 +1,73 @@
+{
+  "claim_definitions": {
+    "A": "Sysmon EventID 10 TargetImage lsass.exe (D03 structured indicator)",
+    "B": "A plus SourceImage powershell.exe",
+    "C": "B plus documented WORKSTATION5 / Empire PowerShell agent PID association"
+  },
+  "definitions": {
+    "complete_ledger": "monotonic set union of arrived source-record claims",
+    "missing_event": "fixed-reference evidence record not delivered; no inferred substitute",
+    "new_claim_event": "event supports at least one claim not in complete ledger just before arrival",
+    "no_claim_event": "event supplies none of the declared claims",
+    "repeat_claim_event": "event supports one or more claims, none new to complete ledger",
+    "timely_ledger": "monotonic set union of arrived claims whose synthetic delay is <= deadline"
+  },
+  "experiment": "D05_maintained_evidence_ledger",
+  "limitations": [
+    "The three claims are nested by construction, not independent evidence of compromise.",
+    "C is scenario-documentation-assisted and is not a general SOC-detectable claim.",
+    "Novel claim acquisition is a ledger-definition consequence, not a validated usefulness score.",
+    "Repetition of a claim does not mean a record is operationally worthless or independent corroboration absent.",
+    "A monotonic claim set cannot handle contradiction, revocation, decay, provenance trust or negative evidence.",
+    "D03 event timestamps mix 679 source UtcTime and 5347 indexed-time fallbacks; cross-source ordering is limited.",
+    "No source-side/production transport latency is inferred; synthetic delay is relative to selected D03 timestamp.",
+    "This first D05 test deliberately excludes aggregation; D04 aggregation projections do not expose independent structured fields sufficient for a fair reclassification."
+  ],
+  "observations": {
+    "condition_rows": 61,
+    "evidence_rows": 244
+  },
+  "outputs": {
+    "evidence_trace": "outputs/d05_evidence_ledger/d05_evidence_update_trace.csv",
+    "evidence_trace_sha256": "d982149ffba6318356bf34f8490ebe7f22440439e3aaa15c06450b3d6eefb233",
+    "summary": "outputs/d05_evidence_ledger/d05_ledger_summary.csv",
+    "summary_sha256": "3a8f656cf1b95ecded5f64970d309198c0c9181e7921df420da8e81bf332ab5f"
+  },
+  "parameters": {
+    "affected_fraction": 0.3,
+    "aggregation": "excluded pending structured-field retention design",
+    "baseline_synthetic_delay_seconds": 0,
+    "deadline_seconds": 180,
+    "delay_seconds": [
+      60,
+      240,
+      600
+    ],
+    "loss_rates": [
+      0.1,
+      0.3,
+      0.5
+    ],
+    "random_draw_order": "D03 source-inventory row order (D04-compatible)",
+    "replay_order": "synthetic arrival timestamp, source ID as tie-breaker",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  "purpose": "declared claim acquisition under raw event replay; not belief accuracy or SOC usefulness",
+  "reference": {
+    "d03_manifest_sha256": "ac698cc830b6056c7f499e7d11d021a530067a0c8579bc2761e7dfaeeff9d669",
+    "evidence_sha256": "adf265806c7b5f83e9e09a20054dd5ff2f2ab0216b7f4a252b91009751b939e6",
+    "inventory_sha256": "921dbe215bedb83a6b660c1b6f790dd640020ca08a5332996534679be81c5b64",
+    "source_count": 6026
+  }
+}
