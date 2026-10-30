@@ -1,0 +1,18 @@
+{
+  "D03_inventory_sha256": "921dbe215bedb83a6b660c1b6f790dd640020ca08a5332996534679be81c5b64",
+  "D03_source_archive_sha256": "bb4c057b62d781be5426e011872ba1a15070c07afbb24848a14458f4b22b06fb",
+  "D07_preflight_sha256": "8bd0edde6d3aa6dd736805f5fca8e1115349663ecb003c024b0cd3d9c5af10a2",
+  "D07_source_archive_sha256": "0af9e920220d746432f0972be83ad057629695540aecd68c15869d190786e1ae",
+  "cases_sha256": "34b2f90a2f7d1e2d4ebb462a67d28683b22c1300c7982448ac0bf51e5d0b4948",
+  "interpretation": "Predeclared source-field / representation-contract validation; no independent attack truth, blinded adjudication, operational SOC benefit, or head-to-head implementation of published forensic-validity methods",
+  "locked_decoder_sha256": {
+    "run_d06_aggregation_representation.py": "48218178508981485e8bd633a339909650aed2822f92089c7dc900053dc49127",
+    "run_d07_transfer_comparison.py": "fec2af32a4b45c91fe357ae624901c84ccf36428731fa65157156fa261c6783a"
+  },
+  "outputs": {
+    "cases_sha256": "3ccccd636223c23e9eee6ed6ffabcecc93a9d4230454bef27d7f57fbafdd3647",
+    "summary_sha256": "410ed1e01d42c54633e2e0374aabec885be5f388b5a9a5c045577f2286ec58da"
+  },
+  "source_code_sha256": "b48e60e0fdeba3407ed76a0d59651f0add985a688c2298dcc8f808bd91e97369",
+  "study": "D08_claim_discrimination"
+}

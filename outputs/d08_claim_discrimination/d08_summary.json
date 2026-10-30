@@ -1,0 +1,41 @@
+{
+  "agreement": 24,
+  "binary_false_excluded": 6,
+  "by_expected": {
+    "indeterminate": 8,
+    "supported": 9,
+    "unsupported": 7
+  },
+  "by_reconstructed": {
+    "indeterminate": 8,
+    "supported": 9,
+    "unsupported": 7
+  },
+  "false_excluded": 0,
+  "false_supported": 0,
+  "matrix": {
+    "indeterminate": {
+      "indeterminate": 8,
+      "supported": 0,
+      "unsupported": 0
+    },
+    "supported": {
+      "indeterminate": 0,
+      "supported": 9,
+      "unsupported": 0
+    },
+    "unsupported": {
+      "indeterminate": 0,
+      "supported": 0,
+      "unsupported": 7
+    }
+  },
+  "membership_counts": {
+    "1": 23,
+    "2": 1
+  },
+  "predeclared_criteria_met": true,
+  "source_nonwitness_abstained": 2,
+  "source_witness_abstained": 6,
+  "total_cases": 24
+}

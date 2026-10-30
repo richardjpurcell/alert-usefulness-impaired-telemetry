@@ -1,0 +1,25 @@
+case_id,scenario,source_lines,claim,policy,withheld_fields,source_witness,expected,reconstructed,agreement,false_supported,false_excluded,source_witness_abstained,source_nonwitness_abstained,binary_supported,binary_not_supported,binary_false_excluded,member_count,serialized_bytes,gzip_bytes,note
+M01,mimikatz,2451,A,P0_raw,,1,supported,supported,1,0,0,0,0,1,0,0,1,1981,900,
+M02,mimikatz,2451,B,P0_raw,,1,supported,supported,1,0,0,0,0,1,0,0,1,1981,900,
+M03,mimikatz,2451,C,P0_raw,,1,supported,supported,1,0,0,0,0,1,0,0,1,1981,900,
+M04,mimikatz,1,A,P0_raw,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,1,3140,969,
+M05,mimikatz,818,B,P0_raw,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,1,3140,974,
+M06,mimikatz,818,C,P0_raw,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,1,3140,974,
+M07,mimikatz,1,A,P1_count,,0,indeterminate,indeterminate,1,0,0,0,1,0,1,0,1,118,107,count-only representation of complete nonmatching process-access record
+M08,mimikatz,2451,B,P2_joint,,1,supported,supported,1,0,0,0,0,1,0,0,1,208,171,
+M09,mimikatz,2451,C,P2_joint,,1,indeterminate,indeterminate,1,0,0,1,0,0,1,1,1,208,171,
+M10,mimikatz,2451,C,P3_pid,,1,supported,supported,1,0,0,0,0,1,0,0,1,288,200,
+M11,mimikatz,2451,B,P2_joint,SourceImage,1,indeterminate,indeterminate,1,0,0,1,0,0,1,1,1,194,163,synthetically withheld source process image
+M12,mimikatz,288;818,B,P2_joint,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,2,244,186,real within-window joint-field nonmixing control
+C01,comsvcs,74,T1,P0_raw,,1,supported,supported,1,0,0,0,0,1,0,0,1,2254,641,
+C02,comsvcs,76,T2,P0_raw,,1,supported,supported,1,0,0,0,0,1,0,0,1,1688,595,
+C03,comsvcs,107,T3,P0_raw,,1,supported,supported,1,0,0,0,0,1,0,0,1,2754,1034,
+C04,comsvcs,83,T1,P0_raw,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,1,1756,784,
+C05,comsvcs,83,T2,P0_raw,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,1,1756,784,
+C06,comsvcs,74,T3,P0_raw,,0,unsupported,unsupported,1,0,0,0,0,0,1,0,1,2254,641,
+C07,comsvcs,74,T1,P1_count,,1,indeterminate,indeterminate,1,0,0,1,0,0,1,1,1,122,110,
+C08,comsvcs,76,T2,P2_joint,,1,supported,supported,1,0,0,0,0,1,0,0,1,206,169,
+C09,comsvcs,107,T3,P2_joint,,1,indeterminate,indeterminate,1,0,0,1,0,0,1,1,1,170,149,
+C10,comsvcs,107,T3,P3_pid,,1,indeterminate,indeterminate,1,0,0,1,0,0,1,1,1,243,172,
+C11,comsvcs,74,T2,P2_joint,SourceImage,1,indeterminate,indeterminate,1,0,0,1,0,0,1,1,1,194,159,synthetically withheld source process image
+C12,comsvcs,83,T3,P1_count,,0,indeterminate,indeterminate,1,0,0,0,1,0,1,0,1,122,110,count-only representation of nonwitness Comsvcs image-load record
