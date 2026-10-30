@@ -1,0 +1,51 @@
+{
+  "channel_counts": {
+    "Microsoft-Windows-Sysmon/Operational": 148,
+    "Security": 36
+  },
+  "event10_field_coverage": {
+    "total": 68,
+    "with_joint_images": 68,
+    "with_source_image": 68,
+    "with_source_pid": 68,
+    "with_target_image": 68
+  },
+  "event1_field_coverage": {
+    "total": 1,
+    "with_command_line": 1,
+    "with_image": 1,
+    "with_image_and_command_line": 1
+  },
+  "event_id_counts": {
+    "1": 1,
+    "10": 68,
+    "11": 2,
+    "1102": 1,
+    "12": 29,
+    "13": 15,
+    "4656": 5,
+    "4658": 10,
+    "4663": 5,
+    "4688": 1,
+    "4689": 3,
+    "4690": 5,
+    "5": 3,
+    "5156": 3,
+    "5158": 3,
+    "7": 30
+  },
+  "host_counts": {
+    "WORKSTATION5": 184
+  },
+  "records": 184,
+  "scope": "structure_only_no_attack_labels",
+  "source_archive_name": "psh_lsass_memory_dump_comsvcs.zip",
+  "source_archive_sha256": "0af9e920220d746432f0972be83ad057629695540aecd68c15869d190786e1ae",
+  "source_member": "psh_lsass_memory_dump_comsvcs_2020-10-18T19500924.json",
+  "source_member_sha256": "264d9048698e79bb7dbca12a770edd9ed947ea8a518965af747ed64e57f176e5",
+  "study": "D07_scenario_preflight",
+  "timestamp_basis_counts": {
+    "source_UtcTime": 148,
+    "unknown": 36
+  }
+}
