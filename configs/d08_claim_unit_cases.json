@@ -1,0 +1,282 @@
+{
+  "study": "D08_predeclared_trivalent_validation",
+  "policy_window_seconds": 5,
+  "cases": [
+    {
+      "id": "M01",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "A",
+      "policy": "P0_raw",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "M02",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "B",
+      "policy": "P0_raw",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "M03",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "C",
+      "policy": "P0_raw",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "M04",
+      "scenario": "mimikatz",
+      "source_lines": [
+        1
+      ],
+      "claim": "A",
+      "policy": "P0_raw",
+      "source_witness": false,
+      "expected": "unsupported"
+    },
+    {
+      "id": "M05",
+      "scenario": "mimikatz",
+      "source_lines": [
+        818
+      ],
+      "claim": "B",
+      "policy": "P0_raw",
+      "source_witness": false,
+      "expected": "unsupported"
+    },
+    {
+      "id": "M06",
+      "scenario": "mimikatz",
+      "source_lines": [
+        818
+      ],
+      "claim": "C",
+      "policy": "P0_raw",
+      "source_witness": false,
+      "expected": "unsupported"
+    },
+    {
+      "id": "M07",
+      "scenario": "mimikatz",
+      "source_lines": [
+        1
+      ],
+      "claim": "A",
+      "policy": "P1_count",
+      "source_witness": false,
+      "expected": "indeterminate",
+      "note": "count-only representation of complete nonmatching process-access record"
+    },
+    {
+      "id": "M08",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "B",
+      "policy": "P2_joint",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "M09",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "C",
+      "policy": "P2_joint",
+      "source_witness": true,
+      "expected": "indeterminate"
+    },
+    {
+      "id": "M10",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "C",
+      "policy": "P3_pid",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "M11",
+      "scenario": "mimikatz",
+      "source_lines": [
+        2451
+      ],
+      "claim": "B",
+      "policy": "P2_joint",
+      "source_witness": true,
+      "expected": "indeterminate",
+      "withheld_fields": [
+        "SourceImage"
+      ],
+      "note": "synthetically withheld source process image"
+    },
+    {
+      "id": "M12",
+      "scenario": "mimikatz",
+      "source_lines": [
+        288,
+        818
+      ],
+      "claim": "B",
+      "policy": "P2_joint",
+      "source_witness": false,
+      "expected": "unsupported",
+      "note": "real within-window joint-field nonmixing control"
+    },
+    {
+      "id": "C01",
+      "scenario": "comsvcs",
+      "source_lines": [
+        74
+      ],
+      "claim": "T1",
+      "policy": "P0_raw",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C02",
+      "scenario": "comsvcs",
+      "source_lines": [
+        76
+      ],
+      "claim": "T2",
+      "policy": "P0_raw",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C03",
+      "scenario": "comsvcs",
+      "source_lines": [
+        107
+      ],
+      "claim": "T3",
+      "policy": "P0_raw",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C04",
+      "scenario": "comsvcs",
+      "source_lines": [
+        83
+      ],
+      "claim": "T1",
+      "policy": "P0_raw",
+      "source_witness": false,
+      "expected": "unsupported"
+    },
+    {
+      "id": "C05",
+      "scenario": "comsvcs",
+      "source_lines": [
+        83
+      ],
+      "claim": "T2",
+      "policy": "P0_raw",
+      "source_witness": false,
+      "expected": "unsupported"
+    },
+    {
+      "id": "C06",
+      "scenario": "comsvcs",
+      "source_lines": [
+        74
+      ],
+      "claim": "T3",
+      "policy": "P0_raw",
+      "source_witness": false,
+      "expected": "unsupported"
+    },
+    {
+      "id": "C07",
+      "scenario": "comsvcs",
+      "source_lines": [
+        74
+      ],
+      "claim": "T1",
+      "policy": "P1_count",
+      "source_witness": true,
+      "expected": "indeterminate"
+    },
+    {
+      "id": "C08",
+      "scenario": "comsvcs",
+      "source_lines": [
+        76
+      ],
+      "claim": "T2",
+      "policy": "P2_joint",
+      "source_witness": true,
+      "expected": "supported"
+    },
+    {
+      "id": "C09",
+      "scenario": "comsvcs",
+      "source_lines": [
+        107
+      ],
+      "claim": "T3",
+      "policy": "P2_joint",
+      "source_witness": true,
+      "expected": "indeterminate"
+    },
+    {
+      "id": "C10",
+      "scenario": "comsvcs",
+      "source_lines": [
+        107
+      ],
+      "claim": "T3",
+      "policy": "P3_pid",
+      "source_witness": true,
+      "expected": "indeterminate"
+    },
+    {
+      "id": "C11",
+      "scenario": "comsvcs",
+      "source_lines": [
+        74
+      ],
+      "claim": "T2",
+      "policy": "P2_joint",
+      "source_witness": true,
+      "expected": "indeterminate",
+      "withheld_fields": [
+        "SourceImage"
+      ],
+      "note": "synthetically withheld source process image"
+    },
+    {
+      "id": "C12",
+      "scenario": "comsvcs",
+      "source_lines": [
+        83
+      ],
+      "claim": "T3",
+      "policy": "P1_count",
+      "source_witness": false,
+      "expected": "indeterminate",
+      "note": "count-only representation of nonwitness Comsvcs image-load record"
+    }
+  ]
+}
