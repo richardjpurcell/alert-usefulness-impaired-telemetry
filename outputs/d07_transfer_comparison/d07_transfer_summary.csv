@@ -1,0 +1,11 @@
+policy,window_seconds,source_records,total_source_records,excluded_unknown_time,units,json_bytes,gzip_bytes,false_supported,false_excluded,T1_supported_groups,T2_supported_groups,T3_supported_groups,T1_ledger_present,T2_ledger_present,T3_ledger_present,T1_source_record_witnesses,T2_source_record_witnesses,T3_source_record_witnesses,unit_reduction_ratio,T1_indeterminate_groups,T2_indeterminate_groups,T3_indeterminate_groups,T1_first_emission_utc,T2_first_emission_utc,T3_first_emission_utc,T1_timely_5s_witnesses,T1_timely_10s_witnesses,T1_timely_30s_witnesses,T1_timely_180s_witnesses,T2_timely_5s_witnesses,T2_timely_10s_witnesses,T2_timely_30s_witnesses,T2_timely_180s_witnesses,T3_timely_5s_witnesses,T3_timely_10s_witnesses,T3_timely_30s_witnesses,T3_timely_180s_witnesses
+P0_raw,0,148,184,36,148,265462,14783,0,0,2,2,1,1,1,1,2,2,1,,,,,,,,,,,,,,,,,,,
+P1_count,5,148,184,36,4,490,148,0,0,0,0,0,0,0,0,,,,37.0,4,4,4,,,,0,0,0,0,0,0,0,0,0,0,0,0
+P2_joint,5,148,184,36,4,1635,405,0,0,1,1,0,1,1,0,,,,37.0,0,0,1,2020-10-18T23:50:10.000Z,2020-10-18T23:50:10.000Z,,2,2,2,2,2,2,2,2,0,0,0,0
+P3_pid,5,148,184,36,4,2103,501,0,0,1,1,0,1,1,0,,,,37.0,0,0,1,2020-10-18T23:50:10.000Z,2020-10-18T23:50:10.000Z,,2,2,2,2,2,2,2,2,0,0,0,0
+P1_count,10,148,184,36,2,246,130,0,0,0,0,0,0,0,0,,,,74.0,2,2,2,,,,0,0,0,0,0,0,0,0,0,0,0,0
+P2_joint,10,148,184,36,2,1001,359,0,0,1,1,0,1,1,0,,,,74.0,0,0,1,2020-10-18T23:50:10.000Z,2020-10-18T23:50:10.000Z,,2,2,2,2,2,2,2,2,0,0,0,0
+P3_pid,10,148,184,36,2,1283,439,0,0,1,1,0,1,1,0,,,,74.0,0,0,1,2020-10-18T23:50:10.000Z,2020-10-18T23:50:10.000Z,,2,2,2,2,2,2,2,2,0,0,0,0
+P1_count,30,148,184,36,2,246,129,0,0,0,0,0,0,0,0,,,,74.0,2,2,2,,,,0,0,0,0,0,0,0,0,0,0,0,0
+P2_joint,30,148,184,36,2,1001,358,0,0,1,1,0,1,1,0,,,,74.0,0,0,1,2020-10-18T23:50:30.000Z,2020-10-18T23:50:30.000Z,,0,0,2,2,0,0,2,2,0,0,0,0
+P3_pid,30,148,184,36,2,1283,438,0,0,1,1,0,1,1,0,,,,74.0,0,0,1,2020-10-18T23:50:30.000Z,2020-10-18T23:50:30.000Z,,0,0,2,2,0,0,2,2,0,0,0,0

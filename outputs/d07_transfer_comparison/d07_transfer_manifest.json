@@ -1,0 +1,68 @@
+{
+  "claims": "T1 Event10 LSASS; T2 same Event10 rundll32-to-LSASS; T3 same Event1 rundll32 comsvcs.dll MiniDump invocation",
+  "cost_note": "Serialized and gzip bytes are proxies; no observed SOC performance or storage costs",
+  "deadlines_seconds": [
+    5,
+    10,
+    30,
+    180
+  ],
+  "encoder": "Imported, unchanged D06 encode_group and group_events",
+  "encoder_sha256": "48218178508981485e8bd633a339909650aed2822f92089c7dc900053dc49127",
+  "interpretation": "Method transfer and observable event-claim recovery, not independent attack-detection accuracy",
+  "limitations": [
+    "T3 cannot be established by P2/P3 because they discard EventID 1 command line",
+    "Process correlation via GUID is supported by raw source but is not recoverable from P2/P3",
+    "This is within LSASS credential-access, not broad technique generalization",
+    "Unknown timestamps excluded from windowed comparisons, not fabricated"
+  ],
+  "observations": {
+    "policy_files": 11,
+    "reconstruction_rows": 72,
+    "source_claims": {
+      "T1": 2,
+      "T2": 2,
+      "T3": 1
+    },
+    "source_timed_records": 148,
+    "summary_rows": 10,
+    "total_records": 184,
+    "unknown_time_records": 36
+  },
+  "outputs": {
+    "policies_sha256": {
+      "P0_full_raw.jsonl": "4026ed13273293bd64ff26178714a85b6aedc36bbc0cf285aa31841993c8a740",
+      "P0_raw_source_timed.jsonl": "d777315267e9a15f35dfedf17fd16e25b61c4f28b67694dfb6e9130b18789513",
+      "P1_count_10s.jsonl": "d16dc3c849693f2776774b8d7c1892a3f4649fb880760319d7624155ebf3c30c",
+      "P1_count_30s.jsonl": "6654a3a3b4244faaa07d23a71a5dd71278578a1002dc555faef7362ecf1adde0",
+      "P1_count_5s.jsonl": "5ab689f3f4b59adb9ab1bae026e4262431309f4d1313f9ffb28b3175904d11f7",
+      "P2_joint_10s.jsonl": "bb8b71541cede2b874f0f7fdbc11cf399eaac915927edad4066c8977fc87ee71",
+      "P2_joint_30s.jsonl": "819662077b034695c8af29eb14c16204b58fefce2c5e69c9fa039243bf5bcc59",
+      "P2_joint_5s.jsonl": "1fcfc828b1205d3ad0ad2db962590d7fd69d833a3d66246ce3ccaf00efa964f6",
+      "P3_pid_10s.jsonl": "61975004ea3559b6217895986f7048e4d1cf9a79717fb0af976dec8fadd0295b",
+      "P3_pid_30s.jsonl": "b2eea240ab29a89c863a1b458b0d63488225ad22d0c5073aac79951572f53919",
+      "P3_pid_5s.jsonl": "993f5345d97e29fc5e851699f011c2942dee2cad2d32d37daa6a5a2330b1cbc0"
+    },
+    "reconstruction_sha256": "006dac75c9d3e0c7f44cbdb81d8ce356e051ac7117516f2a330ce140ec2aae1e",
+    "reference_sha256": "0116dd23fe37e1d272f8986186c33e2442abdb5b6fa27e3b4513a222ae82619a",
+    "summary_sha256": "6041429f9acbdbb59c70d598ecaaff001492c5f1252cc1335edf79d6dd09e3b6"
+  },
+  "preflight_sha256": "8bd0edde6d3aa6dd736805f5fca8e1115349663ecb003c024b0cd3d9c5af10a2",
+  "representation_policies": [
+    "P0_raw",
+    "P1_count",
+    "P2_joint",
+    "P3_pid"
+  ],
+  "source": {
+    "source_archive_sha256": "0af9e920220d746432f0972be83ad057629695540aecd68c15869d190786e1ae",
+    "source_member_sha256": "264d9048698e79bb7dbca12a770edd9ed947ea8a518965af747ed64e57f176e5"
+  },
+  "study": "D07_locked_policy_transfer",
+  "time_eligibility": "Only source_UtcTime records can enter UTC-aligned windows; unknown-time records remain separately inventoried",
+  "window_seconds": [
+    5,
+    10,
+    30
+  ]
+}
