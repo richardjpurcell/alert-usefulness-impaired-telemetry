@@ -1,0 +1,87 @@
+{
+  "caveats": [
+    "The four D03 LSASS events are a declared evidence subset, not compromise ground truth.",
+    "Loss and delay are synthetic; the baseline assumes zero transport latency and therefore does not measure actual SOC availability.",
+    "D03 uses labelled index timestamp fallback for some records; cross-record event-time interpretation may be affected.",
+    "The contrasting aggregation projections are deliberately constructed controls, not evaluated commercial aggregators.",
+    "Whether evidence is identifiable under aggregation is determined by the projection policy, not independently observed detection success.",
+    "A single documented-agent evidence record makes its survival highly variable under random loss.",
+    "No statistical generalization to operational SOC telemetry is implied by the 10 fixed random seeds."
+  ],
+  "definitions": {
+    "count_only": "group contains only host/time/count, with no recoverable source IDs or structured evidence indicators",
+    "identifiable": "source event identity and D03 structured indicator remain available to the audit consumer",
+    "physical_representation": "at least the source identity is included in the experiment-side received source set or aggregate group",
+    "provenance_preserving": "group retains per-member source IDs and relevant D03 evidence annotations",
+    "timely": "identifiable and synthetic delivery shift <= 180 seconds after D03 event_time_utc"
+  },
+  "experiment": "D04_evidence_preservation_under_impairment",
+  "observations": {
+    "aggregation_projection_rows": 328,
+    "condition_rows": 67,
+    "evidence_outcome_rows": 268,
+    "source_timestamp_bases": {
+      "index_timestamp_fallback": 5347,
+      "source_UtcTime": 679
+    }
+  },
+  "outputs": {
+    "aggregation_projections": "outputs/d04_evidence_preservation/d04_aggregation_projections.csv",
+    "aggregation_projections_sha256": "0245d668403988810140844304b65bec66e3c39e729d4eec1bc74c977957b422",
+    "evidence_outcomes": "outputs/d04_evidence_preservation/d04_fixed_evidence_outcomes.csv",
+    "evidence_outcomes_sha256": "c65713ec1585ec0d78d079f5ee5af06d003c776400aff53d08c6e7b2bd6e4e75",
+    "summary": "outputs/d04_evidence_preservation/d04_condition_summary.csv",
+    "summary_sha256": "92dfe515d922124dc8664f9608ce7108d5018eedb6a7b5a149962b71fd571fc0"
+  },
+  "parameters": {
+    "affected_fraction": 0.3,
+    "aggregation_group_keys": [
+      "host",
+      "absolute_UTC_time_bucket"
+    ],
+    "aggregation_policies": [
+      "count_only",
+      "provenance_preserving"
+    ],
+    "aggregation_windows_seconds": [
+      5,
+      10,
+      30
+    ],
+    "deadline_seconds": 180,
+    "delay_seconds": [
+      60,
+      240,
+      600
+    ],
+    "loss_rates": [
+      0.1,
+      0.3,
+      0.5
+    ],
+    "random_draw_order": "D03 source-inventory row order",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "synthetic_baseline_latency_seconds": 0
+  },
+  "purpose": "fixed-evidence availability and identifiability; no host-compromise truth or analyst usefulness",
+  "reference": {
+    "d03_experiment": "D03_fixed_source_evidence_inventory",
+    "d03_manifest_sha256": "ac698cc830b6056c7f499e7d11d021a530067a0c8579bc2761e7dfaeeff9d669",
+    "documented_agent_count": 1,
+    "evidence_sha256": "adf265806c7b5f83e9e09a20054dd5ff2f2ab0216b7f4a252b91009751b939e6",
+    "inventory_sha256": "921dbe215bedb83a6b660c1b6f790dd640020ca08a5332996534679be81c5b64",
+    "lsass_count": 4,
+    "source_count": 6026
+  }
+}
