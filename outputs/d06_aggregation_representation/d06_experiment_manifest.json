@@ -1,0 +1,75 @@
+{
+  "baseline": "D03 immutable source evidence; no host-compromise ground truth",
+  "design": {
+    "P3_time_range": "source_UtcTime min/max where available; fallback not re-labelled",
+    "bytes": "canonical sorted UTF-8 JSONL and deterministic gzip (mtime 0)",
+    "claim_C": "scenario host/PID association used by decoder only",
+    "deadlines_seconds": [
+      5,
+      10,
+      30,
+      180
+    ],
+    "emission": "bucket end (synthetic zero transport delay)",
+    "grouping": "normalized host, UTC-aligned tumbling window",
+    "policies": [
+      "P0_raw",
+      "P1_count",
+      "P2_joint",
+      "P3_pid"
+    ],
+    "policy_eligibility": "all EventID=10 process-access events, no LSASS filtering",
+    "provenance": "P1/P2/P3 do not expose original source-event IDs",
+    "raw_bytes_note": "P0 includes full raw JSON plus source IDs and D03 time metadata",
+    "scenario_documentation_association": {
+      "agent_pid": "1648",
+      "host": "workstation5"
+    },
+    "windows_seconds": [
+      5,
+      10,
+      30
+    ]
+  },
+  "experiment": "D06_aggregation_representation_comparison",
+  "limitations": [
+    "Candidate representations are specified by experimenters, not commercial aggregator implementations.",
+    "Successful claim recovery is conditional on retained defining fields and must not be called detection accuracy.",
+    "D03 record labels remain an evaluation oracle, not incident truth.",
+    "Source-time fallback for 5347 of 6026 events may affect grouping and buffering interpretations.",
+    "The serialized size is a byte-count proxy, not observed infrastructure resource use.",
+    "No event identity recovery is credited to P1/P2/P3 without explicit source IDs."
+  ],
+  "observations": {
+    "claim_rows": 1476,
+    "policy_files": 10,
+    "process_access_records": 272,
+    "source_events": 6026,
+    "source_time_sensitivity_rows": 10,
+    "source_utc_only_records": 679,
+    "summary_rows": 10
+  },
+  "outputs": {
+    "policy_files_sha256": {
+      "P0_raw.jsonl": "3cd51edb60e34fd800b54b908598716235acebd04ebb618588aee380e7280005",
+      "P1_count_10s.jsonl": "65f6abba6f891ffc5287075531b214c719391f63690fb7264592553a6af76839",
+      "P1_count_30s.jsonl": "4d934ba16e4ac5241fe803c6dc6ccebfa3db91353210e1d6a0c971533301d785",
+      "P1_count_5s.jsonl": "b6453fad42bb09d0c1473ac76613f4d494bcd1b4577b8b82b86bca843171cfdd",
+      "P2_joint_10s.jsonl": "66534da2aeb25b238788916fb9959dd016b605ac7a3aa1e4bd976dd2eb8ff6de",
+      "P2_joint_30s.jsonl": "ecdc418c83c2e9fa3c143d9be10b1693bcc33f0ba3c4abf3343350d4455de44f",
+      "P2_joint_5s.jsonl": "25d0910b1efdf3847cb3787fc7cf8bd2bee6493aa8994fea3d4e92e1d9bdb1f4",
+      "P3_pid_10s.jsonl": "d184fad889ec523269d34bbcc31d7d83cb030deefd033e5ef5cbbe7f832295b7",
+      "P3_pid_30s.jsonl": "4ef4bca79cafa9f3ff79682a4efa48a056e0d3b4811646091a46a9ad63d23dbe",
+      "P3_pid_5s.jsonl": "5887d19b60c3989b7b4e164157eee750eb7f5dad5214a1b5812ece86835cad39"
+    },
+    "reconstruction_sha256": "cb66b6f1726d7968ccfdd9df799bd4e65a5ae9d6cf92c28d26418b9a41880b46",
+    "source_time_sensitivity_sha256": "371f000a6aa3b1555e754fbb0574ba838a72b16525918d43b13e60486a624819",
+    "summary_sha256": "c95df2d9b5054abd41d0a1aad3e2fc9bf23d3b25f7243e66967c176c7626b9a7"
+  },
+  "reference": {
+    "D03_manifest_sha256": "ac698cc830b6056c7f499e7d11d021a530067a0c8579bc2761e7dfaeeff9d669",
+    "evidence_sha256": "adf265806c7b5f83e9e09a20054dd5ff2f2ab0216b7f4a252b91009751b939e6",
+    "inventory_sha256": "921dbe215bedb83a6b660c1b6f790dd640020ca08a5332996534679be81c5b64",
+    "source_archive_sha256": "bb4c057b62d781be5426e011872ba1a15070c07afbb24848a14458f4b22b06fb"
+  }
+}
