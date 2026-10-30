@@ -1,0 +1,47 @@
+{
+  "archive_member": "empire_mimikatz_logonpasswords_2020-08-07103224.json",
+  "archive_member_sha256": "eee28c885baa43b564ee1c123aecf0d2a5e456b5e2ff756a83180bd92e8c4ba8",
+  "caveats": [
+    "These are structured telemetry indicators, not proof of compromise or successful credential extraction.",
+    "The documented-agent match is a declared correspondence to an adversary-emulation transcript, not an independently validated event label.",
+    "Original @timestamp is retained separately; where UtcTime is absent, event_time_utc is a labelled index-time fallback.",
+    "The raw archive and all source-event IDs must stay fixed in subsequent impairment and aggregation comparisons."
+  ],
+  "counts": {
+    "documented_agent_lsass_access": 1,
+    "lsass_access": 4,
+    "powershell_lsass_access": 1,
+    "total_events": 6026
+  },
+  "event_time_bases": {
+    "index_timestamp_fallback": 5347,
+    "source_UtcTime": 679
+  },
+  "experiment": "D03_fixed_source_evidence_inventory",
+  "hosts": {
+    "MORDORDC.theshire.local": 528,
+    "WORKSTATION5.theshire.local": 5188,
+    "WORKSTATION6.theshire.local": 310
+  },
+  "indicator_definitions": {
+    "documented_agent_lsass_access": "powershell_lsass_access AND short Hostname=declared host AND SourceProcessId=declared agent PID",
+    "lsass_access": "EventID=10 AND Windows basename(TargetImage)=lsass.exe",
+    "powershell_lsass_access": "lsass_access AND basename(SourceImage)=powershell.exe"
+  },
+  "outputs": {
+    "evidence": "outputs/d03_source_evidence/d03_lsass_access_evidence.csv",
+    "evidence_sha256": "adf265806c7b5f83e9e09a20054dd5ff2f2ab0216b7f4a252b91009751b939e6",
+    "inventory": "outputs/d03_source_evidence/d03_source_event_inventory.csv",
+    "inventory_sha256": "921dbe215bedb83a6b660c1b6f790dd640020ca08a5332996534679be81c5b64"
+  },
+  "purpose": "fixed evidence reference, not a host-compromise ground truth",
+  "scenario": "Empire Mimikatz LogonPasswords",
+  "scenario_documentation": "https://securitydatasets.com/notebooks/atomic/windows/credential_access/SDWIN-190518202151.html",
+  "selection_parameters": {
+    "documented_agent_pid": "1648",
+    "documented_host": "WORKSTATION5",
+    "source": "OTRF scenario's adversary-view transcript; these are declared association criteria, not incident truth"
+  },
+  "source_archive": "data/raw/mordor/empire_mimikatz_logonpasswords.zip",
+  "source_archive_sha256": "bb4c057b62d781be5426e011872ba1a15070c07afbb24848a14458f4b22b06fb"
+}
